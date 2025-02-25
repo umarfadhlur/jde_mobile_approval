@@ -51,48 +51,56 @@ class GenerateSJCubit extends Cubit<GenerateSJState> {
   }
 
   Future<void> fetchShipmentDetails(String requestData) async {
-    print("Fetching shipment details for: $requestData");
-
     try {
       emit(GenerateSJLoading());
 
       // Step 1: Fetch Vehicle
-      print("Fetching vehicle data...");
       final vehicle = await repository.fetchVehicle(requestData);
-      print("Vehicle data fetched: $vehicle");
 
       if (vehicle == null) {
-        print("Error: No shipment data found for vehicle: $requestData");
         emit(GenerateSJFailure(error: "No shipment data found"));
         return;
       }
 
       // Step 2: Fetch Shipment Detail
-      print(
-          "Fetching shipment detail for shipmentNumber: ${vehicle.shipmentNumber}");
       final shipmentDetail =
           await repository.fetchShipmentDetail(vehicle.shipmentNumber);
-      print("Shipment detail fetched: $shipmentDetail");
 
       if (shipmentDetail == null) {
-        print("Error: Failed to fetch shipment header");
         emit(GenerateSJFailure(error: "Failed to fetch shipment header"));
         return;
       }
 
       // Step 3: Gabungkan Data
-      print("Combining vehicle and shipment detail data...");
       final completeData = CompleteShipmentDetailData(
         vehicle: vehicle,
         shipmentDetail: shipmentDetail,
       );
-      print("Complete data: $completeData");
 
       emit(GenerateSJDetailSuccess(completeData));
-    } catch (e, stacktrace) {
-      print("Error occurred: $e");
-      print("Stacktrace: $stacktrace");
+    } catch (e) {
       emit(GenerateSJFailure(error: e.toString()));
+    }
+  }
+
+  Future<void> generateSJ({
+    required String nomorSJ,
+    required String shipmentNumber,
+    required String vehicleNo,
+  }) async {
+    emit(GenerateSJLoading());
+
+    try {
+      final isSuccess =
+          await repository.generateSJ(nomorSJ, shipmentNumber, vehicleNo);
+
+      if (isSuccess == true) {
+        emit(GenerateSJSuccess());
+      } else {
+        emit(GenerateSJFailure(error: "Gagal generate Surat Jalan"));
+      }
+    } catch (e) {
+      emit(GenerateSJFailure(error: "Terjadi kesalahan: $e"));
     }
   }
 }

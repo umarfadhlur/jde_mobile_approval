@@ -280,38 +280,6 @@ class _GenerateSJViewDetailState extends State<GenerateSJViewDetail> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "UOM Volume",
-                            style: GoogleFonts.dmSans(
-                                fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            '${shipment.scheduledVolume} ${shipment.volumeUnitDesc}',
-                            style: GoogleFonts.dmSans(
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: Text(
-                        "",
-                        style: GoogleFonts.dmSans(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ),
           ),

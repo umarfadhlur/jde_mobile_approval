@@ -12,6 +12,8 @@ abstract class GenerateSJRepository {
   Future<GetShipmentHeaderResponse?> fetchShipmentHeader(int shipmentNumber);
   Future<GetAddressResponse?> fetchAddress(int addressNumber);
   Future<GetShipmentDetailResponse?> fetchShipmentDetail(int shipmentNumber);
+  Future<bool?> generateSJ(
+      String nomorSJ, String shipmentNumber, String vehicleNo);
 }
 
 class GenerateSJRepositoryImpl implements GenerateSJRepository {
@@ -114,6 +116,34 @@ class GenerateSJRepositoryImpl implements GenerateSJRepository {
       return null;
     } catch (e) {
       throw Exception("Error fetching shipment detail: $e");
+    }
+  }
+
+  @override
+  Future<bool?> generateSJ(
+      String nomorSJ, String shipmentNumber, String vehicleNo) async {
+    Map<String, dynamic> requestData = {
+      "username": "jde",
+      "password": "jde",
+      "Nomor_Surat_Jalan": nomorSJ,
+      "Shipment_Number": shipmentNumber,
+      "Vehicle_No": vehicleNo
+    };
+    try {
+      var response = await http.post(
+        Uri.parse(EndPoint.generateSJ),
+        body: jsonEncode(requestData),
+        headers: {"Content-Type": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        return jsonResponse["jde__status"] == "SUCCESS";
+      } else {
+        throw Exception("Failed to generate SJ: ${response.body}");
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
     }
   }
 }

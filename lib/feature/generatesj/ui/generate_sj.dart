@@ -30,12 +30,14 @@ class GenerateSJView extends StatefulWidget {
 }
 
 class _GenerateSJViewState extends State<GenerateSJView> {
-  final TextEditingController _controller = TextEditingController();
+  final TextEditingController _vehicleController = TextEditingController();
+  final TextEditingController _sjController = TextEditingController();
   bool _isSearching = false;
   Timer? _debounce;
 
   void _navigateToDetail() {
-    String vehicleNumber = _controller.text; // Ambil teks dari controller
+    String vehicleNumber =
+        _vehicleController.text; // Ambil teks dari controller
 
     Navigator.push(
       context,
@@ -55,17 +57,70 @@ class _GenerateSJViewState extends State<GenerateSJView> {
 
   void _searchData() {
     setState(() {
-      _isSearching = _controller.text.isNotEmpty;
+      _isSearching = _vehicleController.text.isNotEmpty;
     });
     if (_isSearching) {
-      context.read<GenerateSJCubit>().fetchShipmentHeaders(_controller.text);
+      context
+          .read<GenerateSJCubit>()
+          .fetchShipmentHeaders(_vehicleController.text);
     }
+  }
+
+  void saveSJ(BuildContext context) {
+    final state = context.read<GenerateSJCubit>().state;
+
+    if (state is GenerateSJHeaderSuccess) {
+      final shipmentNumber = state
+          .shipmentData.shipmentHeader.rowset.first.shipmentNumber
+          .toString();
+
+      if (_sjController.text.isEmpty || _vehicleController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Semua field harus diisi")),
+        );
+        return;
+      }
+
+      context.read<GenerateSJCubit>().generateSJ(
+            nomorSJ: _sjController.text,
+            shipmentNumber: shipmentNumber,
+            vehicleNo: _vehicleController.text,
+          );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Shipment belum tersedia!")),
+      );
+    }
+  }
+
+  void _showSuccessDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Berhasil!",
+              style: GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
+          content:
+              Text("Surat Jalan berhasil dibuat.", style: GoogleFonts.dmSans()),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              },
+              child: Text("OK", style: GoogleFonts.dmSans()),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   void dispose() {
     _debounce?.cancel();
-    _controller.dispose();
+    _vehicleController.dispose();
     super.dispose();
   }
 
@@ -98,7 +153,7 @@ class _GenerateSJViewState extends State<GenerateSJView> {
             ),
             const SizedBox(height: 16),
             TextField(
-              controller: _controller,
+              controller: _vehicleController,
               onChanged: (_) => _onSearchChanged(),
               decoration: InputDecoration(
                 hintText: "Masukkan Nomor Kendaraan",
@@ -117,6 +172,44 @@ class _GenerateSJViewState extends State<GenerateSJView> {
             ),
             const SizedBox(height: 16),
             Expanded(child: _buildSearchResults()),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              child: SizedBox(
+                width: double.infinity, // Lebar full
+                child: ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _sjController,
+                  builder: (context, value, child) {
+                    bool isButtonEnabled = value.text.isNotEmpty;
+                    return ElevatedButton(
+                      onPressed: isButtonEnabled
+                          ? () {
+                              saveSJ(context);
+                            }
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isButtonEnabled
+                            ? ColorCustom.primaryBlue
+                            : Colors.grey[300],
+                        foregroundColor: isButtonEnabled
+                            ? Colors.white
+                            : Colors.grey[600], // Warna teks
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "Confirm No. SJ",
+                          style: GoogleFonts.dmSans(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -139,6 +232,11 @@ class _GenerateSJViewState extends State<GenerateSJView> {
           );
         } else if (state is GenerateSJHeaderSuccess) {
           return _buildShipmentDetails(state.shipmentData);
+        } else if (state is GenerateSJSuccess) {
+          // Menjalankan showDialog setelah frame selesai dirender
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _showSuccessDialog(context);
+          });
         }
         return _buildEmptyState();
       },
@@ -161,13 +259,60 @@ class _GenerateSJViewState extends State<GenerateSJView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                RichText(
+                  text: TextSpan(
+                    text: "No. Surat Jalan",
+                    style: GoogleFonts.dmSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                    children: const [
+                      TextSpan(
+                        text: "*",
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ],
+                  ),
+                ),
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _sjController,
+                  builder: (context, value, child) {
+                    if (value.text.isEmpty) {
+                      return Text(
+                        "Untuk generate surat jalan, input No. Surat Jalan",
+                        style: GoogleFonts.dmSans(
+                          fontSize: 12,
+                          color: Colors.red,
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+
+                const SizedBox(height: 4),
+
+                TextField(
+                  controller: _sjController,
+                  decoration: InputDecoration(
+                    hintText: "Masukkan surat jalan di sini...",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                  ),
+                ),
+
+                const SizedBox(height: 16), // Beri jarak sebelum konten lainnya
                 Text(
                   "Vehicle Registration",
                   style: GoogleFonts.dmSans(
                       fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  _controller.text,
+                  _vehicleController.text,
                   style: GoogleFonts.dmSans(
                     fontSize: 16,
                   ),
@@ -425,13 +570,19 @@ class _GenerateSJViewState extends State<GenerateSJView> {
                     Expanded(
                       flex: 1,
                       child: ElevatedButton(
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              ColorCustom.primaryBlue),
+                        ),
                         onPressed: () {
                           _navigateToDetail();
                         },
                         child: Text(
                           "Detail",
                           style: GoogleFonts.dmSans(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
