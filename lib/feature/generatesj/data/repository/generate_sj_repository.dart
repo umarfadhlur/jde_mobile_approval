@@ -1,0 +1,119 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+import '../../../../core/constant/endpoint.dart';
+import '../model/get_address.dart';
+import '../model/get_shipment_detail.dart';
+import '../model/get_vehicle.dart';
+import '../model/get_shipment_header.dart';
+
+abstract class GenerateSJRepository {
+  Future<GetVehicle?> fetchVehicle(String vehicleNo);
+  Future<GetShipmentHeaderResponse?> fetchShipmentHeader(int shipmentNumber);
+  Future<GetAddressResponse?> fetchAddress(int addressNumber);
+  Future<GetShipmentDetailResponse?> fetchShipmentDetail(int shipmentNumber);
+}
+
+class GenerateSJRepositoryImpl implements GenerateSJRepository {
+  @override
+  Future<GetVehicle?> fetchVehicle(String vehicleNo) async {
+    Map<String, dynamic> requestData = {
+      "username": "jde",
+      "password": "jde",
+      "No Kendaraan": vehicleNo,
+    };
+    try {
+      var response = await http.post(
+        Uri.parse(EndPoint.getVehicle),
+        body: jsonEncode(requestData),
+        headers: {"Content-Type": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        var vehicleResponse = GetVehicleResponse.fromJson(data);
+
+        if (vehicleResponse.rowset.isNotEmpty) {
+          return vehicleResponse.rowset.first;
+        }
+      }
+      return null;
+    } catch (e) {
+      throw Exception("Error fetching shipment: $e");
+    }
+  }
+
+  @override
+  Future<GetShipmentHeaderResponse?> fetchShipmentHeader(
+      int shipmentNumber) async {
+    Map<String, dynamic> requestData = {
+      "username": "jde",
+      "password": "jde",
+      "Shipment Number": shipmentNumber,
+    };
+    try {
+      var response = await http.post(
+        Uri.parse(EndPoint.getShipmentHeader),
+        body: jsonEncode(requestData),
+        headers: {"Content-Type": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        return GetShipmentHeaderResponse.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      throw Exception("Error fetching shipment header: $e");
+    }
+  }
+
+  @override
+  Future<GetAddressResponse?> fetchAddress(int addressNumber) async {
+    Map<String, dynamic> requestData = {
+      "username": "jde",
+      "password": "jde",
+      "Address Number": addressNumber,
+    };
+    try {
+      var response = await http.post(
+        Uri.parse(EndPoint.getAddress),
+        body: jsonEncode(requestData),
+        headers: {"Content-Type": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        return GetAddressResponse.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      throw Exception("Error fetching address: $e");
+    }
+  }
+
+  @override
+  Future<GetShipmentDetailResponse?> fetchShipmentDetail(
+      int shipmentNumber) async {
+    Map<String, dynamic> requestData = {
+      "username": "jde",
+      "password": "jde",
+      "Shipment Number": shipmentNumber,
+    };
+    try {
+      var response = await http.post(
+        Uri.parse(EndPoint.getShipmentDetail),
+        body: jsonEncode(requestData),
+        headers: {"Content-Type": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        return GetShipmentDetailResponse.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      throw Exception("Error fetching shipment detail: $e");
+    }
+  }
+}
