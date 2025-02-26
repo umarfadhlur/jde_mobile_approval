@@ -29,7 +29,7 @@ class ColorCustom {
     _hexColor("#52a6ff")
   ];
 
-  static Color blueColor = _hexColor("#52a6ff");
+  static Color blueColor = _hexColor("#BCDCE9");
   static Color primaryBlue = _hexColor("#0062A7");
   static List<Color> light1 = [_hexColor("#BFD9FF"), _hexColor("#BFD9FF")];
   static List<Color> light2 = [_hexColor("#EBEDF1"), _hexColor("#EBEDF1")];

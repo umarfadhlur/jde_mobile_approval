@@ -13,8 +13,6 @@ import 'package:jde_mobile_approval/core/constant/shared_preference.dart';
 import 'package:jde_mobile_approval/feature/login/ui/page/login_page.dart';
 import 'package:jde_mobile_approval/feature/main_menu/ui/widget/main_menu.dart';
 import 'package:get/get.dart';
-import 'package:jde_mobile_approval/feature/printsj/ui/print_sj_init.dart';
-import 'package:jde_mobile_approval/feature/signsj/ui/sign_sj_init.dart';
 import 'package:jde_mobile_approval/feature/updatesj/ui/update_sj_init.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bot_toast/bot_toast.dart';
@@ -177,30 +175,10 @@ class _HomePageState extends State<HomePage> {
                               );
                             },
                           ),
-                          menuCard(
-                            'Cetak\nSurat Jalan',
-                            'assets/images/cetaksj.png',
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const PrintSJPageInit(),
-                                ),
-                              );
-                            },
-                          ),
-                          menuCard(
-                            'Sign\nE-Surat Jalan',
-                            'assets/images/signsj.png',
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const SignSJPageInit(),
-                                ),
-                              );
-                            },
-                          ),
+                          menuCard('Cetak\nSurat Jalan',
+                              'assets/images/cetaksj.png'),
+                          menuCard('Sign\nE-Surat Jalan',
+                              'assets/images/signsj.png'),
                         ],
                       ),
                     ),

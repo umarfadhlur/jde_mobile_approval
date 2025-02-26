@@ -3,38 +3,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jde_mobile_approval/core/constant/constants.dart';
-import 'package:jde_mobile_approval/feature/generatesj/data/model/complete_shipment_header_data.dart';
-import 'package:jde_mobile_approval/feature/generatesj/data/repository/generate_sj_repository.dart';
+import 'package:jde_mobile_approval/feature/generatesj/data/model/complete_shipment_detail_data.dart';
+import 'package:jde_mobile_approval/feature/printsj/data/repository/print_sj_repository.dart';
+import '../cubit/print_sj_cubit.dart';
+import '../cubit/print_sj_state.dart';
 
-import '../cubit/generate_sj_cubit.dart';
-import '../cubit/generate_sj_state.dart';
-import '../data/model/complete_shipment_detail_data.dart';
-
-class GenerateSJPageDetail extends StatelessWidget {
+class PrintSJPageDetail extends StatelessWidget {
   final String vehicleNumber;
 
-  const GenerateSJPageDetail({Key? key, required this.vehicleNumber})
+  const PrintSJPageDetail({Key? key, required this.vehicleNumber})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => GenerateSJCubit(repository: GenerateSJRepositoryImpl()),
-      child: GenerateSJViewDetail(vehicleNumber: vehicleNumber),
+      create: (_) => PrintSJCubit(repository: PrintSJRepositoryImpl()),
+      child: PrintSJViewDetail(vehicleNumber: vehicleNumber),
     );
   }
 }
 
-class GenerateSJViewDetail extends StatefulWidget {
+class PrintSJViewDetail extends StatefulWidget {
   final String vehicleNumber;
 
-  const GenerateSJViewDetail({super.key, required this.vehicleNumber});
+  const PrintSJViewDetail({super.key, required this.vehicleNumber});
 
   @override
-  State<GenerateSJViewDetail> createState() => _GenerateSJViewDetailState();
+  State<PrintSJViewDetail> createState() => _PrintSJViewDetailState();
 }
 
-class _GenerateSJViewDetailState extends State<GenerateSJViewDetail> {
+class _PrintSJViewDetailState extends State<PrintSJViewDetail> {
   final TextEditingController _controller = TextEditingController();
   bool _isSearching = true;
   Timer? _debounce;
@@ -43,7 +41,7 @@ class _GenerateSJViewDetailState extends State<GenerateSJViewDetail> {
   void initState() {
     print(widget.vehicleNumber);
     super.initState();
-    context.read<GenerateSJCubit>().fetchShipmentDetails(widget.vehicleNumber);
+    context.read<PrintSJCubit>().fetchShipmentDetails(widget.vehicleNumber);
   }
 
   @override
@@ -80,12 +78,12 @@ class _GenerateSJViewDetailState extends State<GenerateSJViewDetail> {
   }
 
   Widget _buildSearchResults() {
-    return BlocBuilder<GenerateSJCubit, GenerateSJState>(
+    return BlocBuilder<PrintSJCubit, PrintSJState>(
       builder: (context, state) {
         if (!_isSearching) return _buildEmptyState();
-        if (state is GenerateSJLoading) {
+        if (state is PrintSJLoading) {
           return const Center(child: CircularProgressIndicator());
-        } else if (state is GenerateSJFailure) {
+        } else if (state is PrintSJFailure) {
           return Center(
             child: Text(
               "Error: ${state.error}",
@@ -93,7 +91,7 @@ class _GenerateSJViewDetailState extends State<GenerateSJViewDetail> {
                   fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
             ),
           );
-        } else if (state is GenerateSJDetailSuccess) {
+        } else if (state is PrintSJDetailSuccess) {
           return _buildShipmentDetails(state.shipmentData);
         }
         return _buildEmptyState();

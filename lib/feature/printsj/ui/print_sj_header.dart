@@ -2,89 +2,101 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:jde_mobile_approval/core/constant/constants.dart';
 import 'package:jde_mobile_approval/feature/generatesj/data/model/complete_shipment_header_data.dart';
-import 'package:jde_mobile_approval/feature/generatesj/data/repository/generate_sj_repository.dart';
-import 'package:jde_mobile_approval/feature/generatesj/ui/generate_sj_detail.dart';
+import 'package:jde_mobile_approval/feature/printsj/cubit/print_sj_cubit.dart';
+import 'package:jde_mobile_approval/feature/printsj/cubit/print_sj_state.dart';
+import 'package:jde_mobile_approval/feature/printsj/data/repository/print_sj_repository.dart';
+import 'package:jde_mobile_approval/feature/printsj/ui/print_sj_detail.dart';
 
-import '../cubit/generate_sj_cubit.dart';
-import '../cubit/generate_sj_state.dart';
-
-class GenerateSJPage extends StatelessWidget {
-  const GenerateSJPage({super.key});
+class PrintSJPageHeader extends StatelessWidget {
+  final String vehicleNumber;
+  final String shipmentNumber;
+  final String suratJalanNumber;
+  final String supir;
+  const PrintSJPageHeader({
+    super.key,
+    required this.vehicleNumber,
+    required this.shipmentNumber,
+    required this.suratJalanNumber,
+    required this.supir,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => GenerateSJCubit(repository: GenerateSJRepositoryImpl()),
-      child: const GenerateSJView(),
+      create: (_) => PrintSJCubit(repository: PrintSJRepositoryImpl()),
+      child: Builder(
+        builder: (context) {
+          // Dapatkan context baru yang mewarisi BlocProvider
+          return PrintSJViewHeader(
+            vehicleNumber: vehicleNumber,
+            shipmentNumber: shipmentNumber,
+            suratJalanNumber: suratJalanNumber,
+            supir: supir,
+          );
+        },
+      ),
     );
   }
 }
 
-class GenerateSJView extends StatefulWidget {
-  const GenerateSJView({super.key});
+class PrintSJViewHeader extends StatefulWidget {
+  final String vehicleNumber;
+  final String shipmentNumber;
+  final String suratJalanNumber;
+  final String supir;
+  const PrintSJViewHeader({
+    super.key,
+    required this.vehicleNumber,
+    required this.shipmentNumber,
+    required this.suratJalanNumber,
+    required this.supir,
+  });
 
   @override
-  State<GenerateSJView> createState() => _GenerateSJViewState();
+  State<PrintSJViewHeader> createState() => _PrintSJViewHeaderState();
 }
 
-class _GenerateSJViewState extends State<GenerateSJView> {
+class _PrintSJViewHeaderState extends State<PrintSJViewHeader> {
   final TextEditingController _vehicleController = TextEditingController();
   final TextEditingController _sjController = TextEditingController();
-  bool _isSearching = false;
+  final TextEditingController _supirController = TextEditingController();
+  final TextEditingController _penerimaController = TextEditingController();
+  final TextEditingController _deliveryDateController = TextEditingController();
+  final TextEditingController _deliveryTimeController = TextEditingController();
+  final ValueNotifier<bool> isButtonEnabled = ValueNotifier(false);
+
+  final _isSearching = true;
   Timer? _debounce;
 
   void _navigateToDetail() {
-    String vehicleNumber =
-        _vehicleController.text; // Ambil teks dari controller
-
+    String vehicleNumber = widget.vehicleNumber;
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            GenerateSJPageDetail(vehicleNumber: vehicleNumber),
+        builder: (context) => PrintSJPageDetail(vehicleNumber: vehicleNumber),
       ),
     );
   }
 
-  void _onSearchChanged() {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      // _searchData();
-    });
-  }
+  void updateSJ(BuildContext context) {
+    final state = context.read<PrintSJCubit>().state;
 
-  void _searchData() {
-    setState(() {
-      _isSearching = _vehicleController.text.isNotEmpty;
-    });
-    if (_isSearching) {
-      context
-          .read<GenerateSJCubit>()
-          .fetchShipmentHeaders(_vehicleController.text);
-    }
-  }
-
-  void saveSJ(BuildContext context) {
-    final state = context.read<GenerateSJCubit>().state;
-
-    if (state is GenerateSJHeaderSuccess) {
+    if (state is PrintSJHeaderSuccess) {
       final shipmentNumber = state
           .shipmentData.shipmentHeader.rowset.first.shipmentNumber
           .toString();
 
-      if (_sjController.text.isEmpty || _vehicleController.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Semua field harus diisi")),
-        );
-        return;
-      }
-
-      context.read<GenerateSJCubit>().generateSJ(
-            nomorSJ: _sjController.text,
+      context.read<PrintSJCubit>().updateSJ(
+            nomorSJ: widget.suratJalanNumber,
             shipmentNumber: shipmentNumber,
-            vehicleNo: _vehicleController.text,
+            vehicleNo: widget.vehicleNumber,
+            supir: widget.supir,
+            penerima: _penerimaController.text,
+            deliveryDate: _deliveryDateController.text,
+            deliveryTime: _deliveryTimeController.text,
           );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -116,7 +128,7 @@ class _GenerateSJViewState extends State<GenerateSJView> {
 
                 // Pesan Sukses
                 Text(
-                  "Surat Jalan berhasil dibuat!",
+                  "Surat Jalan berhasil di-update!",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.dmSans(
                     fontSize: 16,
@@ -131,6 +143,7 @@ class _GenerateSJViewState extends State<GenerateSJView> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      Navigator.of(context).pop();
                       Navigator.of(context).pop();
                       Navigator.of(context).pop();
                     },
@@ -182,7 +195,7 @@ class _GenerateSJViewState extends State<GenerateSJView> {
 
                 // Pesan Sukses
                 Text(
-                  "Surat Jalan gagal dibuat!",
+                  "Surat Jalan gagal di-update!",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.dmSans(
                     fontSize: 16,
@@ -190,9 +203,8 @@ class _GenerateSJViewState extends State<GenerateSJView> {
                     color: Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 10),
                 Text(
-                  "Surat Jalan tidak dapat dibuat.\nSilahkan coba lagi!",
+                  "Surat Jalan tidak dapat di-update.\nSilahkan coba lagi!",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.dmSans(
                     fontSize: 14,
@@ -207,6 +219,8 @@ class _GenerateSJViewState extends State<GenerateSJView> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pop();
                       Navigator.of(context).pop();
                     },
                     style: ElevatedButton.styleFrom(
@@ -234,10 +248,170 @@ class _GenerateSJViewState extends State<GenerateSJView> {
     );
   }
 
+  void _showRecipientDialog(BuildContext parentContext) {
+    showDialog(
+      context: parentContext,
+      barrierDismissible: false, // Dialog tidak bisa ditutup dengan tap di luar
+      builder: (context) {
+        return BlocProvider.value(
+          value: parentContext.read<PrintSJCubit>(), // Ambil cubit dari parent
+          child: Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header dengan judul dan tombol close
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Masukkan Data Penerima",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Input Penerima
+                  const Text(
+                    "Penerima*",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  TextField(
+                    controller: _penerimaController,
+                    decoration: const InputDecoration(
+                      hintText: "Masukkan nama penerima disini...",
+                      border: OutlineInputBorder(),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Delivery Date*",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            TextField(
+                              controller: _deliveryDateController,
+                              decoration: const InputDecoration(
+                                hintText: "mm-dd-yyyy",
+                                border: OutlineInputBorder(),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Delivery Time*",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            TextField(
+                              controller: _deliveryTimeController,
+                              decoration: const InputDecoration(
+                                hintText: "--:--",
+                                border: OutlineInputBorder(),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Tombol Aksi
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          "Batal",
+                          style: TextStyle(
+                              color: Colors.red, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          updateSJ(parentContext);
+                          // Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ColorCustom.primaryBlue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                        ),
+                        child: const Text("Simpan"),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<PrintSJCubit>().fetchShipmentHeaders(widget.vehicleNumber);
+    _sjController.text = widget.suratJalanNumber;
+    _supirController.text = widget.supir;
+    _penerimaController.addListener(updateButtonState);
+    _deliveryDateController.addListener(updateButtonState);
+    _deliveryTimeController.addListener(updateButtonState);
+  }
+
+  void updateButtonState() {
+    isButtonEnabled.value = _penerimaController.text.isNotEmpty &&
+        _deliveryDateController.text.isNotEmpty &&
+        _deliveryTimeController.text.isNotEmpty;
+  }
+
   @override
   void dispose() {
     _debounce?.cancel();
     _vehicleController.dispose();
+    _penerimaController.dispose();
+    _deliveryDateController.dispose();
+    _deliveryTimeController.dispose();
+    isButtonEnabled.dispose();
     super.dispose();
   }
 
@@ -247,7 +421,7 @@ class _GenerateSJViewState extends State<GenerateSJView> {
       appBar: AppBar(
         backgroundColor: ColorCustom.primaryBlue,
         title: Text(
-          "Generate E-Surat Jalan",
+          "Print E-Surat Jalan",
           style: GoogleFonts.dmSans(fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
@@ -260,56 +434,52 @@ class _GenerateSJViewState extends State<GenerateSJView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Cari Nomor Kendaraan",
-                style: GoogleFonts.dmSans(
-                    fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text(
-              "Untuk generate Surat Jalan, masukkan nomor kendaraan anda di bawah ini.",
-              style: GoogleFonts.dmSans(fontSize: 14, color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _vehicleController,
-              onChanged: (_) => _onSearchChanged(),
-              decoration: InputDecoration(
-                hintText: "Masukkan Nomor Kendaraan",
-                hintStyle: GoogleFonts.dmSans(),
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.search, color: ColorCustom.primaryBlue),
-                  onPressed: _searchData,
-                ),
-                filled: true,
-                fillColor: Colors.grey[200],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              child: GestureDetector(
+                onTap: () {
+                  _showRecipientDialog(context);
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: ColorCustom.blueColor, // Warna default
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Text(
+                        "Data Penerima*",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      Icon(Icons.person, color: Colors.blue),
+                    ],
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
             Expanded(child: _buildSearchResults()),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               child: SizedBox(
-                width: double.infinity, // Lebar full
-                child: ValueListenableBuilder<TextEditingValue>(
-                  valueListenable: _sjController,
-                  builder: (context, value, child) {
-                    bool isButtonEnabled = value.text.isNotEmpty;
+                width: double.infinity,
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: isButtonEnabled,
+                  builder: (context, isEnabled, child) {
                     return ElevatedButton(
-                      onPressed: isButtonEnabled
+                      onPressed: isEnabled
                           ? () {
-                              saveSJ(context);
+                              updateSJ(context);
                             }
                           : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isButtonEnabled
+                        backgroundColor: isEnabled
                             ? ColorCustom.primaryBlue
                             : Colors.grey[300],
-                        foregroundColor: isButtonEnabled
-                            ? Colors.white
-                            : Colors.grey[600], // Warna teks
+                        foregroundColor:
+                            isEnabled ? Colors.white : Colors.grey[600],
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -317,9 +487,11 @@ class _GenerateSJViewState extends State<GenerateSJView> {
                       ),
                       child: Center(
                         child: Text(
-                          "Confirm No. SJ",
+                          "Konfirmasi Pengiriman",
                           style: GoogleFonts.dmSans(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     );
@@ -334,12 +506,12 @@ class _GenerateSJViewState extends State<GenerateSJView> {
   }
 
   Widget _buildSearchResults() {
-    return BlocBuilder<GenerateSJCubit, GenerateSJState>(
+    return BlocBuilder<PrintSJCubit, PrintSJState>(
       builder: (context, state) {
         if (!_isSearching) return _buildEmptyState();
-        if (state is GenerateSJLoading) {
+        if (state is PrintSJLoading) {
           return const Center(child: CircularProgressIndicator());
-        } else if (state is GenerateSJFailure) {
+        } else if (state is PrintSJFailure) {
           return Center(
             child: Text(
               "Error: ${state.error}",
@@ -347,12 +519,15 @@ class _GenerateSJViewState extends State<GenerateSJView> {
                   fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
             ),
           );
-        } else if (state is GenerateSJHeaderSuccess) {
+        } else if (state is PrintSJHeaderSuccess) {
           return _buildShipmentDetails(state.shipmentData);
-        } else if (state is GenerateSJSuccess) {
-          // Menjalankan showDialog setelah frame selesai dirender
+        } else if (state is PrintSJSuccess) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _showSuccessDialog(context);
+          });
+        } else if (state is PopPrintSJFailure) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _showErrorDialog(context);
           });
         }
         return _buildEmptyState();
@@ -376,28 +551,41 @@ class _GenerateSJViewState extends State<GenerateSJView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                RichText(
-                  text: TextSpan(
-                    text: "No. Surat Jalan",
-                    style: GoogleFonts.dmSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                Text(
+                  "No. Surat Jalan",
+                  style: GoogleFonts.dmSans(
+                      fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                TextField(
+                  controller: _sjController,
+                  enabled: false,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(
+                          color: Colors.grey.shade400), // Warna border abu-abu
                     ),
-                    children: const [
-                      TextSpan(
-                        text: "*",
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ],
+                    filled: true,
+                    fillColor:
+                        Colors.grey.shade200, // Warna latar belakang abu-abu
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
                   ),
                 ),
+                const SizedBox(height: 10),
+                Text(
+                  "Supir",
+                  style: GoogleFonts.dmSans(
+                      fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
                 ValueListenableBuilder<TextEditingValue>(
-                  valueListenable: _sjController,
+                  valueListenable: _supirController,
                   builder: (context, value, child) {
                     if (value.text.isEmpty) {
                       return Text(
-                        "Untuk generate surat jalan, input No. Surat Jalan",
+                        "Untuk mengupdate surat jalan, masukkan nama Supir terlebih dahulu.",
                         style: GoogleFonts.dmSans(
                           fontSize: 12,
                           color: Colors.red,
@@ -407,29 +595,31 @@ class _GenerateSJViewState extends State<GenerateSJView> {
                     return const SizedBox.shrink();
                   },
                 ),
-
                 const SizedBox(height: 4),
-
                 TextField(
-                  controller: _sjController,
+                  controller: _supirController,
+                  enabled: false,
                   decoration: InputDecoration(
-                    hintText: "Masukkan surat jalan di sini...",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(
+                          color: Colors.grey.shade400), // Warna border abu-abu
                     ),
+                    filled: true,
+                    fillColor:
+                        Colors.grey.shade200, // Warna latar belakang abu-abu
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 10),
                   ),
                 ),
-
-                const SizedBox(height: 16), // Beri jarak sebelum konten lainnya
+                const SizedBox(height: 16),
                 Text(
                   "Vehicle Registration",
                   style: GoogleFonts.dmSans(
                       fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  _vehicleController.text,
+                  widget.vehicleNumber,
                   style: GoogleFonts.dmSans(
                     fontSize: 16,
                   ),

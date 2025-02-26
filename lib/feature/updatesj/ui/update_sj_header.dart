@@ -4,87 +4,79 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jde_mobile_approval/core/constant/constants.dart';
 import 'package:jde_mobile_approval/feature/generatesj/data/model/complete_shipment_header_data.dart';
-import 'package:jde_mobile_approval/feature/generatesj/data/repository/generate_sj_repository.dart';
-import 'package:jde_mobile_approval/feature/generatesj/ui/generate_sj_detail.dart';
+import 'package:jde_mobile_approval/feature/updatesj/cubit/update_sj_cubit.dart';
+import 'package:jde_mobile_approval/feature/updatesj/cubit/update_sj_state.dart';
+import 'package:jde_mobile_approval/feature/updatesj/data/repository/update_sj_repository.dart';
+import 'package:jde_mobile_approval/feature/updatesj/ui/update_sj_detail.dart';
 
-import '../cubit/generate_sj_cubit.dart';
-import '../cubit/generate_sj_state.dart';
-
-class GenerateSJPage extends StatelessWidget {
-  const GenerateSJPage({super.key});
+class UpdateSJPageHeader extends StatelessWidget {
+  final String vehicleNumber;
+  final String shipmentNumber;
+  final String suratJalanNumber;
+  const UpdateSJPageHeader({
+    super.key,
+    required this.vehicleNumber,
+    required this.shipmentNumber,
+    required this.suratJalanNumber,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => GenerateSJCubit(repository: GenerateSJRepositoryImpl()),
-      child: const GenerateSJView(),
+      create: (_) => UpdateSJCubit(repository: UpdateSJRepositoryImpl()),
+      child: UpdateSJViewHeader(
+        vehicleNumber: vehicleNumber,
+        shipmentNumber: shipmentNumber,
+        suratJalanNumber: suratJalanNumber,
+      ),
     );
   }
 }
 
-class GenerateSJView extends StatefulWidget {
-  const GenerateSJView({super.key});
+class UpdateSJViewHeader extends StatefulWidget {
+  final String vehicleNumber;
+  final String shipmentNumber;
+  final String suratJalanNumber;
+  const UpdateSJViewHeader(
+      {super.key,
+      required this.vehicleNumber,
+      required this.shipmentNumber,
+      required this.suratJalanNumber});
 
   @override
-  State<GenerateSJView> createState() => _GenerateSJViewState();
+  State<UpdateSJViewHeader> createState() => _UpdateSJViewHeaderState();
 }
 
-class _GenerateSJViewState extends State<GenerateSJView> {
+class _UpdateSJViewHeaderState extends State<UpdateSJViewHeader> {
   final TextEditingController _vehicleController = TextEditingController();
   final TextEditingController _sjController = TextEditingController();
-  bool _isSearching = false;
+  final TextEditingController _supirController = TextEditingController();
+  final _isSearching = true;
   Timer? _debounce;
 
   void _navigateToDetail() {
-    String vehicleNumber =
-        _vehicleController.text; // Ambil teks dari controller
-
+    String vehicleNumber = widget.vehicleNumber;
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            GenerateSJPageDetail(vehicleNumber: vehicleNumber),
+        builder: (context) => UpdateSJPageDetail(vehicleNumber: vehicleNumber),
       ),
     );
   }
 
-  void _onSearchChanged() {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      // _searchData();
-    });
-  }
+  void updateSJ(BuildContext context) {
+    final state = context.read<UpdateSJCubit>().state;
 
-  void _searchData() {
-    setState(() {
-      _isSearching = _vehicleController.text.isNotEmpty;
-    });
-    if (_isSearching) {
-      context
-          .read<GenerateSJCubit>()
-          .fetchShipmentHeaders(_vehicleController.text);
-    }
-  }
-
-  void saveSJ(BuildContext context) {
-    final state = context.read<GenerateSJCubit>().state;
-
-    if (state is GenerateSJHeaderSuccess) {
+    if (state is UpdateSJHeaderSuccess) {
       final shipmentNumber = state
           .shipmentData.shipmentHeader.rowset.first.shipmentNumber
           .toString();
 
-      if (_sjController.text.isEmpty || _vehicleController.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Semua field harus diisi")),
-        );
-        return;
-      }
-
-      context.read<GenerateSJCubit>().generateSJ(
+      context.read<UpdateSJCubit>().updateSJ(
             nomorSJ: _sjController.text,
             shipmentNumber: shipmentNumber,
-            vehicleNo: _vehicleController.text,
+            vehicleNo: widget.vehicleNumber,
+            supir: _supirController.text,
           );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -116,7 +108,7 @@ class _GenerateSJViewState extends State<GenerateSJView> {
 
                 // Pesan Sukses
                 Text(
-                  "Surat Jalan berhasil dibuat!",
+                  "Surat Jalan berhasil di-update!",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.dmSans(
                     fontSize: 16,
@@ -131,6 +123,7 @@ class _GenerateSJViewState extends State<GenerateSJView> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      Navigator.of(context).pop();
                       Navigator.of(context).pop();
                       Navigator.of(context).pop();
                     },
@@ -182,7 +175,7 @@ class _GenerateSJViewState extends State<GenerateSJView> {
 
                 // Pesan Sukses
                 Text(
-                  "Surat Jalan gagal dibuat!",
+                  "Surat Jalan gagal di-update!",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.dmSans(
                     fontSize: 16,
@@ -190,9 +183,8 @@ class _GenerateSJViewState extends State<GenerateSJView> {
                     color: Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 10),
                 Text(
-                  "Surat Jalan tidak dapat dibuat.\nSilahkan coba lagi!",
+                  "Surat Jalan tidak dapat di-update.\nSilahkan coba lagi!",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.dmSans(
                     fontSize: 14,
@@ -207,6 +199,7 @@ class _GenerateSJViewState extends State<GenerateSJView> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      Navigator.of(context).pop();
                       Navigator.of(context).pop();
                     },
                     style: ElevatedButton.styleFrom(
@@ -235,6 +228,13 @@ class _GenerateSJViewState extends State<GenerateSJView> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    context.read<UpdateSJCubit>().fetchShipmentHeaders(widget.vehicleNumber);
+    _sjController.text = widget.suratJalanNumber;
+  }
+
+  @override
   void dispose() {
     _debounce?.cancel();
     _vehicleController.dispose();
@@ -247,7 +247,7 @@ class _GenerateSJViewState extends State<GenerateSJView> {
       appBar: AppBar(
         backgroundColor: ColorCustom.primaryBlue,
         title: Text(
-          "Generate E-Surat Jalan",
+          "Update E-Surat Jalan",
           style: GoogleFonts.dmSans(fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
@@ -260,47 +260,19 @@ class _GenerateSJViewState extends State<GenerateSJView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Cari Nomor Kendaraan",
-                style: GoogleFonts.dmSans(
-                    fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text(
-              "Untuk generate Surat Jalan, masukkan nomor kendaraan anda di bawah ini.",
-              style: GoogleFonts.dmSans(fontSize: 14, color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _vehicleController,
-              onChanged: (_) => _onSearchChanged(),
-              decoration: InputDecoration(
-                hintText: "Masukkan Nomor Kendaraan",
-                hintStyle: GoogleFonts.dmSans(),
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.search, color: ColorCustom.primaryBlue),
-                  onPressed: _searchData,
-                ),
-                filled: true,
-                fillColor: Colors.grey[200],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
             Expanded(child: _buildSearchResults()),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               child: SizedBox(
                 width: double.infinity, // Lebar full
                 child: ValueListenableBuilder<TextEditingValue>(
-                  valueListenable: _sjController,
+                  valueListenable: _supirController,
                   builder: (context, value, child) {
                     bool isButtonEnabled = value.text.isNotEmpty;
                     return ElevatedButton(
                       onPressed: isButtonEnabled
                           ? () {
-                              saveSJ(context);
+                              updateSJ(context);
                             }
                           : null,
                       style: ElevatedButton.styleFrom(
@@ -317,7 +289,7 @@ class _GenerateSJViewState extends State<GenerateSJView> {
                       ),
                       child: Center(
                         child: Text(
-                          "Confirm No. SJ",
+                          "Update E-Surat Jalan",
                           style: GoogleFonts.dmSans(
                               fontSize: 16, fontWeight: FontWeight.bold),
                         ),
@@ -334,12 +306,12 @@ class _GenerateSJViewState extends State<GenerateSJView> {
   }
 
   Widget _buildSearchResults() {
-    return BlocBuilder<GenerateSJCubit, GenerateSJState>(
+    return BlocBuilder<UpdateSJCubit, UpdateSJState>(
       builder: (context, state) {
         if (!_isSearching) return _buildEmptyState();
-        if (state is GenerateSJLoading) {
+        if (state is UpdateSJLoading) {
           return const Center(child: CircularProgressIndicator());
-        } else if (state is GenerateSJFailure) {
+        } else if (state is UpdateSJFailure) {
           return Center(
             child: Text(
               "Error: ${state.error}",
@@ -347,12 +319,15 @@ class _GenerateSJViewState extends State<GenerateSJView> {
                   fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
             ),
           );
-        } else if (state is GenerateSJHeaderSuccess) {
+        } else if (state is UpdateSJHeaderSuccess) {
           return _buildShipmentDetails(state.shipmentData);
-        } else if (state is GenerateSJSuccess) {
-          // Menjalankan showDialog setelah frame selesai dirender
+        } else if (state is UpdateSJSuccess) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _showSuccessDialog(context);
+          });
+        } else if (state is PopUpdateSJFailure) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _showErrorDialog(context);
           });
         }
         return _buildEmptyState();
@@ -392,12 +367,41 @@ class _GenerateSJViewState extends State<GenerateSJView> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 4),
+                TextField(
+                  controller: _sjController,
+                  enabled: false,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                RichText(
+                  text: TextSpan(
+                    text: "Supir",
+                    style: GoogleFonts.dmSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                    children: const [
+                      TextSpan(
+                        text: "*",
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ],
+                  ),
+                ),
                 ValueListenableBuilder<TextEditingValue>(
-                  valueListenable: _sjController,
+                  valueListenable: _supirController,
                   builder: (context, value, child) {
                     if (value.text.isEmpty) {
                       return Text(
-                        "Untuk generate surat jalan, input No. Surat Jalan",
+                        "Untuk mengupdate surat jalan, masukkan nama Supir terlebih dahulu.",
                         style: GoogleFonts.dmSans(
                           fontSize: 12,
                           color: Colors.red,
@@ -407,13 +411,11 @@ class _GenerateSJViewState extends State<GenerateSJView> {
                     return const SizedBox.shrink();
                   },
                 ),
-
                 const SizedBox(height: 4),
-
                 TextField(
-                  controller: _sjController,
+                  controller: _supirController,
                   decoration: InputDecoration(
-                    hintText: "Masukkan surat jalan di sini...",
+                    hintText: "Masukkan nama supir di sini...",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -421,15 +423,14 @@ class _GenerateSJViewState extends State<GenerateSJView> {
                         horizontal: 12, vertical: 10),
                   ),
                 ),
-
-                const SizedBox(height: 16), // Beri jarak sebelum konten lainnya
+                const SizedBox(height: 16),
                 Text(
                   "Vehicle Registration",
                   style: GoogleFonts.dmSans(
                       fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  _vehicleController.text,
+                  widget.vehicleNumber,
                   style: GoogleFonts.dmSans(
                     fontSize: 16,
                   ),

@@ -49,12 +49,6 @@ class _LoginPageState extends State<LoginPage> {
     _loginBloc.add(LoginSubmit(username: username, password: password));
   }
 
-  // Future<void> _saveCredentials(String username, String password) async {
-  //   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   await prefs.setString(SharedPref.username, username);
-  //   await prefs.setString(SharedPref.password, password);
-  // }
-
   Future<void> _clearCredentials() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove(SharedPref.username);
@@ -103,7 +97,7 @@ class _LoginPageState extends State<LoginPage> {
                         hintText: "Enter your username",
                         hintStyle: GoogleFonts.dmSans(),
                         prefixIcon:
-                            const Icon(Icons.person, color: Colors.blue),
+                            Icon(Icons.person, color: ColorCustom.primaryBlue),
                         filled: true,
                         fillColor: Colors.grey[200],
                         border: OutlineInputBorder(
@@ -119,13 +113,14 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: InputDecoration(
                         hintText: "Enter your password",
                         hintStyle: GoogleFonts.dmSans(),
-                        prefixIcon: const Icon(Icons.lock, color: Colors.blue),
+                        prefixIcon:
+                            Icon(Icons.lock, color: ColorCustom.primaryBlue),
                         suffixIcon: IconButton(
                           icon: Icon(
                               _isHidePass
                                   ? Icons.visibility_off
                                   : Icons.visibility,
-                              color: Colors.blue),
+                              color: ColorCustom.primaryBlue),
                           onPressed: () =>
                               setState(() => _isHidePass = !_isHidePass),
                         ),
@@ -142,7 +137,7 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: () => _loginProgress(
                           _emailController.text, _passwordController.text),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: ColorCustom.primaryBlue,
                         minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
