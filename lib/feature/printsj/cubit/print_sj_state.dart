@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:jde_mobile_approval/feature/generatesj/data/model/complete_shipment_detail_data.dart';
 import 'package:jde_mobile_approval/feature/generatesj/data/model/complete_shipment_header_data.dart';
+import 'package:jde_mobile_approval/feature/printsj/data/model/complete_shipment_data.dart';
 import 'package:jde_mobile_approval/feature/updatesj/data/model/get_surat_jalan.dart';
 
 abstract class PrintSJState extends Equatable {
@@ -23,6 +24,15 @@ class ListPrintSJSuccess extends PrintSJState {
 
   @override
   List<Object?> get props => [suratJalan];
+}
+
+class PrintSJCompleteSuccess extends PrintSJState {
+  final CompleteShipmentData data;
+
+  const PrintSJCompleteSuccess(this.data);
+  
+  @override
+  List<Object?> get props => [data];
 }
 
 class PrintSJFailure extends PrintSJState {

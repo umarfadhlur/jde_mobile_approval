@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:jde_mobile_approval/feature/generatesj/data/model/complete_shipment_detail_data.dart';
 import 'package:jde_mobile_approval/feature/generatesj/data/model/complete_shipment_header_data.dart';
+import 'package:jde_mobile_approval/feature/printsj/data/model/complete_shipment_data.dart';
 import 'package:jde_mobile_approval/feature/printsj/data/repository/print_sj_repository.dart';
 
 import 'print_sj_state.dart';
@@ -93,6 +94,55 @@ class PrintSJCubit extends Cubit<PrintSJState> {
       );
 
       emit(PrintSJDetailSuccess(completeData));
+    } catch (e) {
+      emit(PrintSJFailure(e.toString()));
+    }
+  }
+
+  Future<void> fetchCompleteShipmentData(String requestData) async {
+    try {
+      emit(PrintSJLoading());
+
+      // Step 1: Fetch Vehicle
+      final vehicle = await repository.fetchVehicle(requestData);
+      if (vehicle == null) {
+        emit(PrintSJFailure("No shipment data found"));
+        return;
+      }
+
+      // Step 2: Fetch PrintSJ Header
+      final shipmentHeader =
+          await repository.fetchShipmentHeader(vehicle.shipmentNumber);
+      if (shipmentHeader == null) {
+        emit(PrintSJFailure("Failed to fetch shipment header"));
+        return;
+      }
+
+      // Step 3: Fetch Address berdasarkan shipment
+      final address = await repository
+          .fetchAddress(shipmentHeader.rowset.first.destinationAddress);
+      if (address == null) {
+        emit(PrintSJFailure("Alamat tidak ditemukan"));
+        return;
+      }
+
+      // Step 4: Fetch Shipment Detail
+      final shipmentDetail =
+          await repository.fetchShipmentDetail(vehicle.shipmentNumber);
+      if (shipmentDetail == null) {
+        emit(PrintSJFailure("Failed to fetch shipment detail"));
+        return;
+      }
+
+      // Gabungkan semua data
+      final completeData = CompleteShipmentData(
+        vehicle: vehicle,
+        shipmentHeader: shipmentHeader,
+        address: address,
+        shipmentDetail: shipmentDetail,
+      );
+
+      emit(PrintSJCompleteSuccess(completeData));
     } catch (e) {
       emit(PrintSJFailure(e.toString()));
     }

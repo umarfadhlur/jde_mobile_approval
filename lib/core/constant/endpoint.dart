@@ -1,7 +1,7 @@
 class EndPoint {
   //static String _baseUrl = 'http://36.37.92.3:9281';
-  static const String _baseUrl = 'http://192.168.9.39:9281/jderest';
-  // static const String _baseUrl = 'http://202.69.100.5:9281/jderest';
+  // static const String _baseUrl = 'http://192.168.9.39:9281/jderest';
+  static const String _baseUrl = 'http://202.69.100.5:9281/jderest';
   //static String _baseUrl = 'https://wms2.opusb.id/jderest';
 
   static String login = "$_baseUrl/v2/tokenrequest";
@@ -87,4 +87,5 @@ class EndPoint {
   static String generateSJ = "$_baseUrl/orchestrator/HDN_NEW_SJ";
   static String getSJ = "$_baseUrl/orchestrator/HDN_GET_SJ";
   static String updateSJ = "$_baseUrl/orchestrator/HDN_UPDATE_SJ";
+  static String delivSJ = "$_baseUrl/orchestrator/HDN_DELIV";
 }

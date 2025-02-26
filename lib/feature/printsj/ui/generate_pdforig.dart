@@ -11,6 +11,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:printing/printing.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class PDFPage extends StatelessWidget {
   final String vehicleNumber;
@@ -57,13 +58,26 @@ class PDFView extends StatefulWidget {
 }
 
 class _PDFViewState extends State<PDFView> {
+  Uint8List? pdfBytes;
+
   @override
   void initState() {
     super.initState();
-    context
-        .read<PrintSJCubit>()
-        .fetchCompleteShipmentData(widget.vehicleNumber);
+    _generatePDF();
   }
+
+  Future<void> _generatePDF() async {
+  final cubit = context.read<PrintSJCubit>();
+  await cubit.fetchCompleteShipmentData(widget.vehicleNumber);
+
+  final state = cubit.state;
+  if (state is PrintSJCompleteSuccess) {
+    final pdfData = await generatePDF(state.data);
+    setState(() {
+      pdfBytes = pdfData;
+    });
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -79,20 +93,9 @@ class _PDFViewState extends State<PDFView> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: BlocBuilder<PrintSJCubit, PrintSJState>(
-        builder: (context, state) {
-          if (state is PrintSJLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is PrintSJFailure) {
-            return Center(child: Text("Error: ${state.error}"));
-          } else if (state is PrintSJCompleteSuccess) {
-            return PdfPreview(
-              build: (format) => generatePDF(state.data),
-            );
-          }
-          return const SizedBox();
-        },
-      ),
+      body: pdfBytes == null
+          ? const Center(child: CircularProgressIndicator())
+          : SfPdfViewer.memory(pdfBytes!),
     );
   }
 

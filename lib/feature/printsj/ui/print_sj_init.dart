@@ -59,7 +59,12 @@ class _PrintSJViewInitState extends State<PrintSJViewInit> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => PDFPage(),
+          builder: (context) => PDFPage(
+            vehicleNumber: selectedItem.registrationNumber,
+            shipmentNumber: selectedItem.shipmentNumber.toString(),
+            suratJalanNumber: selectedItem.remark,
+            supir: selectedItem.descriptionLine1 ?? '',
+          ),
         ),
       );
     }
