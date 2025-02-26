@@ -6,6 +6,7 @@ import 'package:jde_mobile_approval/core/constant/constants.dart';
 import 'package:jde_mobile_approval/feature/printsj/cubit/print_sj_cubit.dart';
 import 'package:jde_mobile_approval/feature/printsj/cubit/print_sj_state.dart';
 import 'package:jde_mobile_approval/feature/printsj/data/repository/print_sj_repository.dart';
+import 'package:jde_mobile_approval/feature/printsj/ui/generate_pdf.dart';
 import 'package:jde_mobile_approval/feature/printsj/ui/print_sj_header.dart';
 import 'package:jde_mobile_approval/feature/updatesj/data/model/get_surat_jalan.dart';
 
@@ -44,15 +45,21 @@ class _PrintSJViewInitState extends State<PrintSJViewInit> {
       print(selectedItem.shipmentNumber);
       print(selectedItem.remark);
 
+      //  Navigator.push(
+      //   context,
+      //   MaterialPageRoute(
+      //     builder: (context) => PrintSJPageHeader(
+      //       vehicleNumber: selectedItem.registrationNumber,
+      //       shipmentNumber: selectedItem.shipmentNumber.toString(),
+      //       suratJalanNumber: selectedItem.remark,
+      //       supir: selectedItem.descriptionLine1 ?? '',
+      //     ),
+      //   ),
+      // );
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => PrintSJPageHeader(
-            vehicleNumber: selectedItem.registrationNumber,
-            shipmentNumber: selectedItem.shipmentNumber.toString(),
-            suratJalanNumber: selectedItem.remark,
-            supir: selectedItem.descriptionLine1 ?? '',
-          ),
+          builder: (context) => PDFPage(),
         ),
       );
     }

@@ -215,7 +215,7 @@ class _GenerateSJViewDetailState extends State<GenerateSJViewDetail> {
                                 fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            '${shipment.shipmentWeight} ${shipment.weightUnitDesc}',
+                            '${shipment.shipmentWeight.floor()} ${shipment.weightUnitDesc}',
                             style: GoogleFonts.dmSans(
                               fontSize: 16,
                             ),
@@ -234,7 +234,7 @@ class _GenerateSJViewDetailState extends State<GenerateSJViewDetail> {
                                 fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            '${shipment.scheduledVolume} ${shipment.volumeUnitDesc}',
+                            '${shipment.scheduledVolume.floor()} ${shipment.volumeUnitDesc}',
                             style: GoogleFonts.dmSans(
                               fontSize: 16,
                             ),

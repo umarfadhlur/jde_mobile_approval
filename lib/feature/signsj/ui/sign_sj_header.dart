@@ -863,39 +863,6 @@ class _SignSJViewHeaderState extends State<SignSJViewHeader> {
                     fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: Text(
-                        "",
-                        style: GoogleFonts.dmSans(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: ElevatedButton(
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all<Color>(
-                              ColorCustom.primaryBlue),
-                        ),
-                        onPressed: () {
-                          _navigateToDetail();
-                        },
-                        child: Text(
-                          "Detail",
-                          style: GoogleFonts.dmSans(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
               ],
             ),
           ),
