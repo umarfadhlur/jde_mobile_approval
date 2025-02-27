@@ -112,7 +112,9 @@ class _SignSJViewInitState extends State<SignSJViewInit> {
             ),
           );
         } else if (state is ListSignSJSuccess) {
-          return _buildShipmentDetails(state.suratJalan);
+          state.suratJalan.rowset == []
+              ? _buildEmptyState()
+              : _buildShipmentDetails(state.suratJalan);
         }
         return _buildEmptyState();
       },
@@ -248,9 +250,6 @@ class _SignSJViewInitState extends State<SignSJViewInit> {
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.grey[700])),
-          Text("Masukkan nomor kendaraan\nanda terlebih dahulu.",
-              style: GoogleFonts.dmSans(fontSize: 14, color: Colors.grey[500]),
-              textAlign: TextAlign.center),
         ],
       ),
     );

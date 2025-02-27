@@ -81,7 +81,7 @@ class _SignSJViewHeaderState extends State<SignSJViewHeader> {
     );
   }
 
-  void updateSJ(BuildContext context) {
+  void deliverSJ(BuildContext context) {
     final state = context.read<SignSJCubit>().state;
 
     if (state is SignSJHeaderSuccess) {
@@ -91,9 +91,9 @@ class _SignSJViewHeaderState extends State<SignSJViewHeader> {
 
       context.read<SignSJCubit>().updateSJ(
             nomorSJ: widget.suratJalanNumber,
-            shipmentNumber: shipmentNumber,
-            vehicleNo: widget.vehicleNumber,
             supir: widget.supir,
+            vehicleNo: widget.vehicleNumber,
+            shipmentNumber: shipmentNumber,
             penerima: _penerimaController.text,
             deliveryDate: _deliveryDateController.text,
             deliveryTime: _deliveryTimeController.text,
@@ -365,7 +365,7 @@ class _SignSJViewHeaderState extends State<SignSJViewHeader> {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          // updateSJ(parentContext);
+                          // deliverSJ(parentContext);
                           Navigator.pop(context);
                         },
                         style: ElevatedButton.styleFrom(
@@ -471,7 +471,7 @@ class _SignSJViewHeaderState extends State<SignSJViewHeader> {
                     return ElevatedButton(
                       onPressed: isEnabled
                           ? () {
-                              updateSJ(context);
+                              deliverSJ(context);
                             }
                           : null,
                       style: ElevatedButton.styleFrom(

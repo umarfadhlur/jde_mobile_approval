@@ -111,7 +111,9 @@ class _UpdateSJViewInitState extends State<UpdateSJViewInit> {
             ),
           );
         } else if (state is ListUpdateSJSuccess) {
-          return _buildShipmentDetails(state.suratJalan);
+          state.suratJalan.rowset == []
+              ? _buildEmptyState()
+              : _buildShipmentDetails(state.suratJalan);
         }
         return _buildEmptyState();
       },
@@ -215,9 +217,6 @@ class _UpdateSJViewInitState extends State<UpdateSJViewInit> {
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.grey[700])),
-          Text("Masukkan nomor kendaraan\nanda terlebih dahulu.",
-              style: GoogleFonts.dmSans(fontSize: 14, color: Colors.grey[500]),
-              textAlign: TextAlign.center),
         ],
       ),
     );

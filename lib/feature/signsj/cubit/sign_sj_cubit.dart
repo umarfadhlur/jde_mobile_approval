@@ -114,6 +114,32 @@ class SignSJCubit extends Cubit<SignSJState> {
           vehicleNo, supir, penerima, deliveryDate, deliveryTime);
 
       if (isSuccess == true) {
+        final isDeliver = await repository.deliverSJ(
+            deliveryDate, deliveryTime, penerima, shipmentNumber);
+        if (isDeliver == true) {
+          emit(SignSJSuccess());
+        }
+      } else {
+        emit(const PopSignSJFailure("Gagal generate Surat Jalan"));
+      }
+    } catch (e) {
+      emit(PopSignSJFailure("Terjadi kesalahan: $e"));
+    }
+  }
+
+  Future<void> deliverSJ({
+    required String shipmentNumber,
+    required String penerima,
+    required String deliveryDate,
+    required String deliveryTime,
+  }) async {
+    emit(SignSJLoading());
+
+    try {
+      final isSuccess = await repository.deliverSJ(
+          deliveryDate, deliveryTime, penerima, shipmentNumber);
+
+      if (isSuccess == true) {
         emit(SignSJSuccess());
       } else {
         emit(const PopSignSJFailure("Gagal generate Surat Jalan"));

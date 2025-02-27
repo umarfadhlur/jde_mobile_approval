@@ -13,13 +13,13 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:printing/printing.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
-class PDFPage extends StatelessWidget {
+class PDFSyncPage extends StatelessWidget {
   final String vehicleNumber;
   final String shipmentNumber;
   final String suratJalanNumber;
   final String supir;
 
-  const PDFPage(
+  const PDFSyncPage(
       {super.key,
       required this.vehicleNumber,
       required this.shipmentNumber,
@@ -30,7 +30,7 @@ class PDFPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => PrintSJCubit(repository: PrintSJRepositoryImpl()),
-      child: PDFView(
+      child: PDFSyncView(
         vehicleNumber: vehicleNumber,
         shipmentNumber: shipmentNumber,
         suratJalanNumber: suratJalanNumber,
@@ -40,13 +40,13 @@ class PDFPage extends StatelessWidget {
   }
 }
 
-class PDFView extends StatefulWidget {
+class PDFSyncView extends StatefulWidget {
   final String vehicleNumber;
   final String shipmentNumber;
   final String suratJalanNumber;
   final String supir;
 
-  const PDFView(
+  const PDFSyncView(
       {super.key,
       required this.vehicleNumber,
       required this.shipmentNumber,
@@ -54,10 +54,10 @@ class PDFView extends StatefulWidget {
       required this.supir});
 
   @override
-  State<PDFView> createState() => _PDFViewState();
+  State<PDFSyncView> createState() => _PDFViewState();
 }
 
-class _PDFViewState extends State<PDFView> {
+class _PDFViewState extends State<PDFSyncView> {
   Uint8List? pdfBytes;
 
   @override
@@ -67,17 +67,17 @@ class _PDFViewState extends State<PDFView> {
   }
 
   Future<void> _generatePDF() async {
-  final cubit = context.read<PrintSJCubit>();
-  await cubit.fetchCompleteShipmentData(widget.vehicleNumber);
+    final cubit = context.read<PrintSJCubit>();
+    await cubit.fetchCompleteShipmentData(widget.vehicleNumber);
 
-  final state = cubit.state;
-  if (state is PrintSJCompleteSuccess) {
-    final pdfData = await generatePDF(state.data);
-    setState(() {
-      pdfBytes = pdfData;
-    });
+    final state = cubit.state;
+    if (state is PrintSJCompleteSuccess) {
+      final pdfData = await generatePDF(state.data);
+      setState(() {
+        pdfBytes = pdfData;
+      });
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -133,9 +133,8 @@ class _PDFViewState extends State<PDFView> {
                               ),
                             ),
                             pw.Text(
-                                'Gedung Blugreen-Boutique Office 3rd Floor, Suite BG-03 & BC-03'),
-                            pw.Text(
-                                'Jl. Lingkar Luar Barat Kav. 88, Puri Kembangan, Jakarta 11610'),
+                                'Jalan Raya Merak Km 117 Kelurahan Gerem, Kecamatan Grogol'),
+                            pw.Text('Kodya Cilegon 42438, Banten, Indonesia'),
                             pw.Text('Tel: +62-21-2952 7180'),
                             pw.Text('Fax: +62-21-2952 7183'),
                           ],
@@ -342,9 +341,7 @@ class _PDFViewState extends State<PDFView> {
                                   style: pw.TextStyle(
                                       fontWeight: pw.FontWeight.bold),
                                 ),
-                                pw.Text(
-                                  ""
-                                ),
+                                pw.Text(""),
                               ],
                             ),
                           ),
@@ -427,10 +424,14 @@ class _PDFViewState extends State<PDFView> {
                     ),
                     pw.Column(
                       children: [
+                        pw.Text('Tanggal, __________________',
+                            style:
+                                pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                        pw.SizedBox(height: 10),
                         pw.Text('Penerima',
                             style:
                                 pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                        pw.SizedBox(height: 50),
+                        pw.SizedBox(height: 40),
                         pw.Text('(--------------------)'),
                       ],
                     ),

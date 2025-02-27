@@ -130,9 +130,8 @@ class _PDFViewState extends State<PDFView> {
                               ),
                             ),
                             pw.Text(
-                                'Gedung Blugreen-Boutique Office 3rd Floor, Suite BG-03 & BC-03'),
-                            pw.Text(
-                                'Jl. Lingkar Luar Barat Kav. 88, Puri Kembangan, Jakarta 11610'),
+                                'Jalan Raya Merak Km 117 Kelurahan Gerem, Kecamatan Grogol'),
+                            pw.Text('Kodya Cilegon 42438, Banten, Indonesia'),
                             pw.Text('Tel: +62-21-2952 7180'),
                             pw.Text('Fax: +62-21-2952 7183'),
                           ],
@@ -339,9 +338,7 @@ class _PDFViewState extends State<PDFView> {
                                   style: pw.TextStyle(
                                       fontWeight: pw.FontWeight.bold),
                                 ),
-                                pw.Text(
-                                  ""
-                                ),
+                                pw.Text(""),
                               ],
                             ),
                           ),
@@ -424,10 +421,14 @@ class _PDFViewState extends State<PDFView> {
                     ),
                     pw.Column(
                       children: [
+                        pw.Text('Tanggal, __________________',
+                            style:
+                                pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                        pw.SizedBox(height: 10),
                         pw.Text('Penerima',
                             style:
                                 pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                        pw.SizedBox(height: 50),
+                        pw.SizedBox(height: 40),
                         pw.Text('(--------------------)'),
                       ],
                     ),

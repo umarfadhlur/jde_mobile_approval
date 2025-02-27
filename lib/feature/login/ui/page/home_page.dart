@@ -1,4 +1,3 @@
-
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jde_mobile_approval/core/constant/color.dart';
 import 'package:jde_mobile_approval/feature/generatesj/ui/generate_sj.dart';
@@ -109,7 +108,6 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           const SizedBox(height: 20),
-          
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16.0),

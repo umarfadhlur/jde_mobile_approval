@@ -15,13 +15,20 @@ abstract class SignSJRepository {
   Future<GetAddressResponse?> fetchAddress(int addressNumber);
   Future<GetShipmentDetailResponse?> fetchShipmentDetail(int shipmentNumber);
   Future<bool?> updateSJ(
-      String nomorSJ,
-      String shipmentNumber,
-      String vehicleNo,
-      String supir,
-      String penerima,
-      String deliveryDate,
-      String deliveryTime);
+    String nomorSJ,
+    String shipmentNumber,
+    String vehicleNo,
+    String supir,
+    String penerima,
+    String deliveryDate,
+    String deliveryTime,
+  );
+  Future<bool?> deliverSJ(
+    String deliveryDate,
+    String deliveryTime,
+    String penerima,
+    String shipmentNumber,
+  );
 }
 
 class SignSJRepositoryImpl implements SignSJRepository {
@@ -180,6 +187,39 @@ class SignSJRepositoryImpl implements SignSJRepository {
     try {
       var response = await http.post(
         Uri.parse(EndPoint.updateSJ),
+        body: jsonEncode(requestData),
+        headers: {"Content-Type": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        return jsonResponse["jde__status"] == "SUCCESS";
+      } else {
+        throw Exception("Failed to generate SJ: ${response.body}");
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+  @override
+  Future<bool?> deliverSJ(
+    String deliveryDate,
+    String deliveryTime,
+    String penerima,
+    String shipmentNumber,
+  ) async {
+    Map<String, dynamic> requestData = {
+      "username": "jde",
+      "password": "jde",
+      "Delivery_Date": deliveryDate,
+      "Delivery_Time_Character": deliveryTime,
+      "Received_by": penerima,
+      "Shipment_Number": shipmentNumber,
+    };
+    try {
+      var response = await http.post(
+        Uri.parse(EndPoint.deliverSJ),
         body: jsonEncode(requestData),
         headers: {"Content-Type": "application/json"},
       );

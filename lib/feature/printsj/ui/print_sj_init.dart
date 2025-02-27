@@ -7,6 +7,7 @@ import 'package:jde_mobile_approval/feature/printsj/cubit/print_sj_cubit.dart';
 import 'package:jde_mobile_approval/feature/printsj/cubit/print_sj_state.dart';
 import 'package:jde_mobile_approval/feature/printsj/data/repository/print_sj_repository.dart';
 import 'package:jde_mobile_approval/feature/printsj/ui/generate_pdf.dart';
+import 'package:jde_mobile_approval/feature/printsj/ui/generate_pdfsync.dart';
 import 'package:jde_mobile_approval/feature/printsj/ui/print_sj_header.dart';
 import 'package:jde_mobile_approval/feature/updatesj/data/model/get_surat_jalan.dart';
 
@@ -59,7 +60,7 @@ class _PrintSJViewInitState extends State<PrintSJViewInit> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => PDFPage(
+          builder: (context) => PDFSyncPage(
             vehicleNumber: selectedItem.registrationNumber,
             shipmentNumber: selectedItem.shipmentNumber.toString(),
             suratJalanNumber: selectedItem.remark,
@@ -67,6 +68,17 @@ class _PrintSJViewInitState extends State<PrintSJViewInit> {
           ),
         ),
       );
+      // Navigator.push(
+      //   context,
+      //   MaterialPageRoute(
+      //     builder: (context) => PDFPage(
+      //       vehicleNumber: selectedItem.registrationNumber,
+      //       shipmentNumber: selectedItem.shipmentNumber.toString(),
+      //       suratJalanNumber: selectedItem.remark,
+      //       supir: selectedItem.descriptionLine1 ?? '',
+      //     ),
+      //   ),
+      // );
     }
   }
 
@@ -124,7 +136,9 @@ class _PrintSJViewInitState extends State<PrintSJViewInit> {
             ),
           );
         } else if (state is ListPrintSJSuccess) {
-          return _buildShipmentDetails(state.suratJalan);
+          state.suratJalan.rowset == []
+              ? _buildEmptyState()
+              : _buildShipmentDetails(state.suratJalan);
         }
         return _buildEmptyState();
       },
@@ -260,9 +274,6 @@ class _PrintSJViewInitState extends State<PrintSJViewInit> {
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.grey[700])),
-          Text("Masukkan nomor kendaraan\nanda terlebih dahulu.",
-              style: GoogleFonts.dmSans(fontSize: 14, color: Colors.grey[500]),
-              textAlign: TextAlign.center),
         ],
       ),
     );
