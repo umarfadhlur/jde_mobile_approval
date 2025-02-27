@@ -365,8 +365,8 @@ class _SignSJViewHeaderState extends State<SignSJViewHeader> {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          updateSJ(parentContext);
-                          // Navigator.pop(context);
+                          // updateSJ(parentContext);
+                          Navigator.pop(context);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: ColorCustom.primaryBlue,
@@ -578,22 +578,6 @@ class _SignSJViewHeaderState extends State<SignSJViewHeader> {
                   "Supir",
                   style: GoogleFonts.dmSans(
                       fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                ValueListenableBuilder<TextEditingValue>(
-                  valueListenable: _supirController,
-                  builder: (context, value, child) {
-                    if (value.text.isEmpty) {
-                      return Text(
-                        "Untuk mengupdate surat jalan, masukkan nama Supir terlebih dahulu.",
-                        style: GoogleFonts.dmSans(
-                          fontSize: 12,
-                          color: Colors.red,
-                        ),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
                 ),
                 const SizedBox(height: 4),
                 TextField(

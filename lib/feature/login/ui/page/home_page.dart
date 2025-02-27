@@ -1,24 +1,13 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jde_mobile_approval/core/constant/color.dart';
 import 'package:jde_mobile_approval/feature/generatesj/ui/generate_sj.dart';
-import 'package:jde_mobile_approval/feature/main_menu/data/model/get_connect_watchlist.dart';
-import 'package:jde_mobile_approval/feature/main_menu/data/model/get_data_f980051.dart';
-import 'package:jde_mobile_approval/feature/main_menu/bloc/menu_bloc.dart';
-import 'package:jde_mobile_approval/feature/login/bloc/login_bloc.dart';
-import 'package:jde_mobile_approval/feature/login/data/repository/login_repo.dart';
-import 'package:jde_mobile_approval/feature/main_menu/data/repository/menu_repo.dart';
 import 'package:flutter/material.dart';
 import 'package:jde_mobile_approval/core/constant/shared_preference.dart';
-import 'package:jde_mobile_approval/feature/login/ui/page/login_page.dart';
-import 'package:jde_mobile_approval/feature/main_menu/ui/widget/main_menu.dart';
-import 'package:get/get.dart';
 import 'package:jde_mobile_approval/feature/printsj/ui/print_sj_init.dart';
 import 'package:jde_mobile_approval/feature/signsj/ui/sign_sj_init.dart';
 import 'package:jde_mobile_approval/feature/updatesj/ui/update_sj_init.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:bot_toast/bot_toast.dart';
-import 'dart:convert';
 import 'dart:async';
 
 class HomePage extends StatefulWidget {
@@ -63,7 +52,7 @@ class _HomePageState extends State<HomePage> {
           Stack(
             children: [
               Container(
-                height: 210,
+                height: 220,
                 decoration: BoxDecoration(
                   color: ColorCustom.primaryBlue,
                   borderRadius: const BorderRadius.only(
@@ -87,8 +76,8 @@ class _HomePageState extends State<HomePage> {
                   },
                   blendMode: BlendMode.dstIn,
                   child: Image.asset(
-                    'assets/images/factory.png', // Ganti dengan gambar Anda
-                    fit: BoxFit.cover,
+                    'assets/images/vector.png', // Ganti dengan gambar Anda
+                    fit: BoxFit.fill,
                   ),
                 ),
               ),
@@ -120,6 +109,7 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           const SizedBox(height: 20),
+          
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -140,7 +130,7 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'My Menus',
+                      'Menu Saya',
                       style: GoogleFonts.dmSans(
                           fontSize: 18, fontWeight: FontWeight.bold),
                     ),

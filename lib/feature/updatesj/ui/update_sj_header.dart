@@ -351,21 +351,10 @@ class _UpdateSJViewHeaderState extends State<UpdateSJViewHeader> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                RichText(
-                  text: TextSpan(
-                    text: "No. Surat Jalan",
-                    style: GoogleFonts.dmSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                    children: const [
-                      TextSpan(
-                        text: "*",
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ],
-                  ),
+                Text(
+                  "No. Surat Jalan",
+                  style: GoogleFonts.dmSans(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 TextField(
@@ -374,27 +363,21 @@ class _UpdateSJViewHeaderState extends State<UpdateSJViewHeader> {
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(
+                          color: Colors.grey.shade400), // Warna border abu-abu
                     ),
+                    filled: true,
+                    fillColor:
+                        Colors.grey.shade200, // Warna latar belakang abu-abu
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 10),
                   ),
                 ),
-                const SizedBox(height: 16),
-                RichText(
-                  text: TextSpan(
-                    text: "Supir",
-                    style: GoogleFonts.dmSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                    children: const [
-                      TextSpan(
-                        text: "*",
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ],
-                  ),
+                const SizedBox(height: 10),
+                Text(
+                  "Supir",
+                  style: GoogleFonts.dmSans(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 ValueListenableBuilder<TextEditingValue>(
                   valueListenable: _supirController,
