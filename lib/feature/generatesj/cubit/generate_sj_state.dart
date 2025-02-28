@@ -33,3 +33,13 @@ class GenerateSJFailure extends GenerateSJState {
   @override
   List<Object?> get props => [error];
 }
+
+class GenerateSJExists extends GenerateSJState {
+  final String shipmentNumber;
+  final String error;
+
+  GenerateSJExists({required this.shipmentNumber, required this.error});
+
+  @override
+  List<Object?> get props => [shipmentNumber, error];
+}

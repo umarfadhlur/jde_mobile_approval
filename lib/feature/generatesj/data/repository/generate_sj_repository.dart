@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:jde_mobile_approval/feature/updatesj/data/model/get_surat_jalan.dart';
 
 import '../../../../core/constant/endpoint.dart';
 import '../model/get_address.dart';
@@ -14,6 +15,7 @@ abstract class GenerateSJRepository {
   Future<GetShipmentDetailResponse?> fetchShipmentDetail(int shipmentNumber);
   Future<bool?> generateSJ(
       String nomorSJ, String shipmentNumber, String vehicleNo);
+  Future<GetSuratJalanResponse?> fetchSuratJalan();
 }
 
 class GenerateSJRepositoryImpl implements GenerateSJRepository {
@@ -144,6 +146,35 @@ class GenerateSJRepositoryImpl implements GenerateSJRepository {
       }
     } catch (e) {
       throw Exception("Error: $e");
+    }
+  }
+
+  @override
+  Future<GetSuratJalanResponse?> fetchSuratJalan() async {
+    Map<String, dynamic> requestData = {
+      "username": "jde",
+      "password": "jde",
+    };
+
+    try {
+      print("Sending request to: ${EndPoint.getSJ} with body: $requestData");
+      var response = await http.post(
+        Uri.parse(EndPoint.getSJ),
+        body: jsonEncode(requestData),
+        headers: {"Content-Type": "application/json"},
+      );
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        return GetSuratJalanResponse.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      print("Exception occurred: $e");
+      throw Exception("Error fetching address: $e");
     }
   }
 }

@@ -20,6 +20,21 @@ class GenerateSJCubit extends Cubit<GenerateSJState> {
         return;
       }
 
+      // Ambil seluruh Surat Jalan
+      final suratJalan = await repository.fetchSuratJalan();
+
+      if (suratJalan != null && suratJalan.rowset.isNotEmpty) {
+        bool isExists = suratJalan.rowset
+            .any((element) => element.shipmentNumber == vehicle.shipmentNumber);
+
+        if (isExists) {
+          emit(GenerateSJExists(
+              error: "Shipment Number ${vehicle.shipmentNumber} sudah ada",
+              shipmentNumber: vehicle.shipmentNumber.toString()));
+          return;
+        }
+      }
+
       // Step 2: Fetch GenerateSJ Header (GetGenerateSJHeader)
       final shipmentHeader =
           await repository.fetchShipmentHeader(vehicle.shipmentNumber);

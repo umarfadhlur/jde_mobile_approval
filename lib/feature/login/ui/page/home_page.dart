@@ -140,31 +140,31 @@ class _HomePageState extends State<HomePage> {
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
                         children: [
-                          menuCard(
-                            'Generate\nSurat Jalan',
-                            'assets/images/generatesj.png',
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const GenerateSJPage(),
-                                ),
-                              );
-                            },
-                          ),
-                          menuCard(
-                            'Update\nSurat Jalan',
-                            'assets/images/updatesj.png',
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const UpdateSJPageInit(),
-                                ),
-                              );
-                            },
-                          ),
+                          // menuCard(
+                          //   'Generate\nSurat Jalan',
+                          //   'assets/images/generatesj.png',
+                          //   onPressed: () {
+                          //     Navigator.push(
+                          //       context,
+                          //       MaterialPageRoute(
+                          //         builder: (context) => const GenerateSJPage(),
+                          //       ),
+                          //     );
+                          //   },
+                          // ),
+                          // menuCard(
+                          //   'Update\nSurat Jalan',
+                          //   'assets/images/updatesj.png',
+                          //   onPressed: () {
+                          //     Navigator.push(
+                          //       context,
+                          //       MaterialPageRoute(
+                          //         builder: (context) =>
+                          //             const UpdateSJPageInit(),
+                          //       ),
+                          //     );
+                          //   },
+                          // ),
                           menuCard(
                             'Cetak\nSurat Jalan',
                             'assets/images/cetaksj.png',

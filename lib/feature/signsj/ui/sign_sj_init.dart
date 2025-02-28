@@ -48,11 +48,16 @@ class _SignSJViewInitState extends State<SignSJViewInit> {
         context,
         MaterialPageRoute(
           builder: (context) => SignSJPageHeader(
-            vehicleNumber: selectedItem.registrationNumber,
-            shipmentNumber: selectedItem.shipmentNumber.toString(),
-            suratJalanNumber: selectedItem.remark,
-            supir: selectedItem.descriptionLine1 ?? '',
-          ),
+              vehicleNumber: selectedItem.registrationNumber,
+              // vehicleNumber: selectedItem.registrationNumber.contains('-')
+              //     ? selectedItem.registrationNumber.split('-').first
+              //     : selectedItem.registrationNumber.toString(),
+              shipmentNumber: selectedItem.shipmentNumber.toString(),
+              suratJalanNumber: selectedItem.remark,
+              // supir: selectedItem.descriptionLine1 ?? '',
+              supir: selectedItem.descriptionLine1 == ' '
+                  ? selectedItem.registrationNumber.split('-').last
+                  : selectedItem.descriptionLine1.toString()),
         ),
       );
     }
@@ -187,7 +192,11 @@ class _SignSJViewInitState extends State<SignSJViewInit> {
                                   fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              suratjalan.registrationNumber,
+                              suratjalan.registrationNumber.contains('-')
+                                  ? suratjalan.registrationNumber
+                                      .split('-')
+                                      .first
+                                  : suratjalan.registrationNumber.toString(),
                               style: GoogleFonts.dmSans(
                                 fontSize: 16,
                               ),
@@ -211,7 +220,11 @@ class _SignSJViewInitState extends State<SignSJViewInit> {
                                   fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              suratjalan.descriptionLine1.toString(),
+                              suratjalan.descriptionLine1 == ' '
+                                  ? suratjalan.registrationNumber
+                                      .split('-')
+                                      .last
+                                  : suratjalan.descriptionLine1.toString(),
                               style: GoogleFonts.dmSans(
                                 fontSize: 16,
                               ),

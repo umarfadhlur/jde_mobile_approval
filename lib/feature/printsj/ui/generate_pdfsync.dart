@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,10 +8,12 @@ import 'package:jde_mobile_approval/feature/printsj/cubit/print_sj_cubit.dart';
 import 'package:jde_mobile_approval/feature/printsj/cubit/print_sj_state.dart';
 import 'package:jde_mobile_approval/feature/printsj/data/model/complete_shipment_data.dart';
 import 'package:jde_mobile_approval/feature/printsj/data/repository/print_sj_repository.dart';
+import 'package:jde_mobile_approval/feature/printsj/ui/generate_pdf.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:printing/printing.dart';
+import 'package:signature/signature.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class PDFSyncPage extends StatelessWidget {
@@ -59,11 +62,24 @@ class PDFSyncView extends StatefulWidget {
 
 class _PDFViewState extends State<PDFSyncView> {
   Uint8List? pdfBytes;
+  Uint8List? signature;
+  late SignatureController _signatureController;
 
   @override
   void initState() {
     super.initState();
+    _signatureController = SignatureController(
+      penStrokeWidth: 3,
+      penColor: Colors.black,
+      exportBackgroundColor: Colors.white,
+    );
     _generatePDF();
+  }
+
+  void _onSigned(Uint8List data) {
+    setState(() {
+      signature = data;
+    });
   }
 
   Future<void> _generatePDF() async {
@@ -96,6 +112,30 @@ class _PDFViewState extends State<PDFSyncView> {
       body: pdfBytes == null
           ? const Center(child: CircularProgressIndicator())
           : SfPdfViewer.memory(pdfBytes!),
+      // : Column(
+      //     children: [
+      //       SfPdfViewer.memory(pdfBytes!),
+      //       Expanded(
+      //           child: SignaturePad(
+      //         controller: _signatureController,
+      //         onSigned: _onSigned,
+      //       )),
+      //       ElevatedButton(
+      //         onPressed: signature != null
+      //             ? () => Navigator.push(
+      //                   context,
+      //                   MaterialPageRoute(
+      //                     builder: (context) => PDFPage(
+      //                       pdfBytes: pdfBytes!,
+      //                       signature: signature!,
+      //                     ),
+      //                   ),
+      //                 )
+      //             : null,
+      //         child: const Text("Lanjutkan"),
+      //       ),
+      //     ],
+      //   ),
     );
   }
 
@@ -179,7 +219,10 @@ class _PDFViewState extends State<PDFSyncView> {
                                       fontWeight: pw.FontWeight.bold),
                                 ),
                                 pw.Text(
-                                  widget.vehicleNumber,
+                                  // widget.vehicleNumber,
+                                  widget.vehicleNumber.contains('-')
+                                      ? widget.vehicleNumber.split('-').first
+                                      : widget.vehicleNumber,
                                 ),
                               ],
                             ),
@@ -196,7 +239,10 @@ class _PDFViewState extends State<PDFSyncView> {
                                       fontWeight: pw.FontWeight.bold),
                                 ),
                                 pw.Text(
-                                  widget.vehicleNumber,
+                                  // widget.vehicleNumber,
+                                  widget.vehicleNumber.contains('-')
+                                      ? widget.vehicleNumber.split('-').first
+                                      : widget.vehicleNumber,
                                 ),
                               ],
                             ),
@@ -451,3 +497,36 @@ class _PDFViewState extends State<PDFSyncView> {
     return pdf.save();
   }
 }
+
+// class SignaturePad extends StatelessWidget {
+//   final Function(Uint8List) onSigned;
+//   final SignatureController controller;
+
+//   const SignaturePad({
+//     super.key,
+//     required this.onSigned,
+//     required this.controller,
+//   });
+
+//   Future<void> _handleOnDrawEnd() async {
+//   final image = await _signatureController.toImage();
+//   final bytes = await image?.toByteData(format: ImageByteFormat.png);
+//   if (bytes != null) {
+//     onSigned(bytes.buffer.asUint8List());
+//   }
+// }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     controller.onDrawEnd = _handleOnDrawEnd;
+
+//     return Container(
+//       padding: const EdgeInsets.all(16.0),
+//       child: Signature(
+//         controller: controller,
+//         backgroundColor: Colors.white,
+//         width: 3.0,
+//       ),
+//     );
+//   }
+// }

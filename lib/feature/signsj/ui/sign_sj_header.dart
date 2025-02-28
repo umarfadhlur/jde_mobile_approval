@@ -248,6 +248,145 @@ class _SignSJViewHeaderState extends State<SignSJViewHeader> {
     );
   }
 
+  // void _showRecipientDialog(BuildContext parentContext) {
+  //   showDialog(
+  //     context: parentContext,
+  //     barrierDismissible: false, // Dialog tidak bisa ditutup dengan tap di luar
+  //     builder: (context) {
+  //       return BlocProvider.value(
+  //         value: parentContext.read<SignSJCubit>(), // Ambil cubit dari parent
+  //         child: Dialog(
+  //           shape: RoundedRectangleBorder(
+  //             borderRadius: BorderRadius.circular(12),
+  //           ),
+  //           child: Container(
+  //             width: double.infinity,
+  //             padding: const EdgeInsets.all(20),
+  //             child: Column(
+  //               mainAxisSize: MainAxisSize.min,
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 // Header dengan judul dan tombol close
+  //                 Row(
+  //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                   children: [
+  //                     const Text(
+  //                       "Masukkan Data Penerima",
+  //                       style: TextStyle(
+  //                         fontSize: 18,
+  //                         fontWeight: FontWeight.bold,
+  //                       ),
+  //                     ),
+  //                     GestureDetector(
+  //                       onTap: () => Navigator.pop(context),
+  //                       child: const Icon(Icons.close),
+  //                     ),
+  //                   ],
+  //                 ),
+  //                 const SizedBox(height: 16),
+
+  //                 // Input Penerima
+  //                 const Text(
+  //                   "Penerima*",
+  //                   style: TextStyle(fontWeight: FontWeight.bold),
+  //                 ),
+  //                 const SizedBox(height: 4),
+  //                 TextField(
+  //                   controller: _penerimaController,
+  //                   decoration: const InputDecoration(
+  //                     hintText: "Masukkan nama penerima disini...",
+  //                     border: OutlineInputBorder(),
+  //                     contentPadding:
+  //                         EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+  //                   ),
+  //                 ),
+  //                 const SizedBox(height: 12),
+
+  //                 Row(
+  //                   children: [
+  //                     Expanded(
+  //                       child: Column(
+  //                         crossAxisAlignment: CrossAxisAlignment.start,
+  //                         children: [
+  //                           const Text(
+  //                             "Delivery Date*",
+  //                             style: TextStyle(fontWeight: FontWeight.bold),
+  //                           ),
+  //                           const SizedBox(height: 4),
+  //                           TextField(
+  //                             controller: _deliveryDateController,
+  //                             decoration: const InputDecoration(
+  //                               hintText: "mm-dd-yyyy",
+  //                               border: OutlineInputBorder(),
+  //                               contentPadding: EdgeInsets.symmetric(
+  //                                   horizontal: 12, vertical: 8),
+  //                             ),
+  //                           ),
+  //                         ],
+  //                       ),
+  //                     ),
+  //                     const SizedBox(width: 12),
+  //                     Expanded(
+  //                       child: Column(
+  //                         crossAxisAlignment: CrossAxisAlignment.start,
+  //                         children: [
+  //                           const Text(
+  //                             "Delivery Time*",
+  //                             style: TextStyle(fontWeight: FontWeight.bold),
+  //                           ),
+  //                           const SizedBox(height: 4),
+  //                           TextField(
+  //                             controller: _deliveryTimeController,
+  //                             decoration: const InputDecoration(
+  //                               hintText: "--:--",
+  //                               border: OutlineInputBorder(),
+  //                               contentPadding: EdgeInsets.symmetric(
+  //                                   horizontal: 12, vertical: 8),
+  //                             ),
+  //                           ),
+  //                         ],
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //                 const SizedBox(height: 20),
+
+  //                 // Tombol Aksi
+  //                 Row(
+  //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                   children: [
+  //                     TextButton(
+  //                       onPressed: () => Navigator.pop(context),
+  //                       child: const Text(
+  //                         "Batal",
+  //                         style: TextStyle(
+  //                             color: Colors.red, fontWeight: FontWeight.bold),
+  //                       ),
+  //                     ),
+  //                     ElevatedButton(
+  //                       onPressed: () {
+  //                         // deliverSJ(parentContext);
+  //                         Navigator.pop(context);
+  //                       },
+  //                       style: ElevatedButton.styleFrom(
+  //                         backgroundColor: ColorCustom.primaryBlue,
+  //                         foregroundColor: Colors.white,
+  //                         padding: const EdgeInsets.symmetric(
+  //                             horizontal: 20, vertical: 12),
+  //                       ),
+  //                       child: const Text("Simpan"),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+
   void _showRecipientDialog(BuildContext parentContext) {
     showDialog(
       context: parentContext,
@@ -315,8 +454,24 @@ class _SignSJViewHeaderState extends State<SignSJViewHeader> {
                             const SizedBox(height: 4),
                             TextField(
                               controller: _deliveryDateController,
+                              readOnly: true,
+                              onTap: () async {
+                                DateTime? pickedDate = await showDatePicker(
+                                  context: context,
+                                  initialDate: DateTime.now(),
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime(2100),
+                                );
+                                if (pickedDate != null) {
+                                  String formattedDate =
+                                      "${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.year}";
+                                  _deliveryDateController.text = formattedDate;
+                                  _deliveryDateController.text =
+                                      "${pickedDate.month.toString().padLeft(2, '0')}${pickedDate.day.toString().padLeft(2, '0')}${pickedDate.year}";
+                                }
+                              },
                               decoration: const InputDecoration(
-                                hintText: "mm-dd-yyyy",
+                                hintText: "mm/dd/yyyy",
                                 border: OutlineInputBorder(),
                                 contentPadding: EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 8),
@@ -337,6 +492,20 @@ class _SignSJViewHeaderState extends State<SignSJViewHeader> {
                             const SizedBox(height: 4),
                             TextField(
                               controller: _deliveryTimeController,
+                              readOnly: true,
+                              onTap: () async {
+                                TimeOfDay? pickedTime = await showTimePicker(
+                                  context: context,
+                                  initialTime: TimeOfDay.now(),
+                                );
+                                if (pickedTime != null) {
+                                  String formattedTime =
+                                      "${pickedTime.hour.toString().padLeft(2, '0')}:${pickedTime.minute.toString().padLeft(2, '0')}";
+                                  _deliveryTimeController.text = formattedTime;
+                                  _deliveryTimeController.text =
+                                      "${pickedTime.hour.toString().padLeft(2, '0')}${pickedTime.minute.toString().padLeft(2, '0')}00";
+                                }
+                              },
                               decoration: const InputDecoration(
                                 hintText: "--:--",
                                 border: OutlineInputBorder(),
@@ -603,7 +772,10 @@ class _SignSJViewHeaderState extends State<SignSJViewHeader> {
                       fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  widget.vehicleNumber,
+                  // widget.vehicleNumber,
+                  widget.vehicleNumber.contains('-')
+                      ? widget.vehicleNumber.split('-').first
+                      : widget.vehicleNumber,
                   style: GoogleFonts.dmSans(
                     fontSize: 16,
                   ),

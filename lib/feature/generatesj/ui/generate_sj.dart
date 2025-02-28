@@ -159,6 +159,81 @@ class _GenerateSJViewState extends State<GenerateSJView> {
     );
   }
 
+  void _showExistDialog(BuildContext context, String shipment) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/Gagal.gif',
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                ),
+                const SizedBox(height: 16),
+
+                // Pesan Sukses
+                Text(
+                  "Shipment Number $shipment Sudah Ada!",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "Surat Jalan tidak dapat dibuat ulang.\nSilahkan gunakan data berbeda!",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Tombol Kembali
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorCustom.primaryBlue, // Warna tombol
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      "Kembali",
+                      style: GoogleFonts.dmSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _showErrorDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -353,6 +428,10 @@ class _GenerateSJViewState extends State<GenerateSJView> {
           // Menjalankan showDialog setelah frame selesai dirender
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _showSuccessDialog(context);
+          });
+        } else if (state is GenerateSJExists) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _showExistDialog(context, state.shipmentNumber);
           });
         }
         return _buildEmptyState();
