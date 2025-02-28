@@ -185,7 +185,10 @@ class _PDFViewState extends State<PDFView> {
                                       fontWeight: pw.FontWeight.bold),
                                 ),
                                 pw.Text(
-                                  widget.vehicleNumber,
+                                  // widget.vehicleNumber,
+                                  widget.vehicleNumber.contains('-')
+                                      ? widget.vehicleNumber.split('-').first
+                                      : widget.vehicleNumber,
                                 ),
                               ],
                             ),
@@ -202,7 +205,10 @@ class _PDFViewState extends State<PDFView> {
                                       fontWeight: pw.FontWeight.bold),
                                 ),
                                 pw.Text(
-                                  widget.vehicleNumber,
+                                  // widget.vehicleNumber,
+                                  widget.vehicleNumber.contains('-')
+                                      ? widget.vehicleNumber.split('-').first
+                                      : widget.vehicleNumber,
                                 ),
                               ],
                             ),
