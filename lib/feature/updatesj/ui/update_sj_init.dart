@@ -111,7 +111,7 @@ class _UpdateSJViewInitState extends State<UpdateSJViewInit> {
             ),
           );
         } else if (state is ListUpdateSJSuccess) {
-          state.suratJalan.rowset == []
+          return state.suratJalan.rowset.isEmpty
               ? _buildEmptyState()
               : _buildShipmentDetails(state.suratJalan);
         }

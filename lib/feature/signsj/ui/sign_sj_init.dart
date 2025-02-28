@@ -112,7 +112,7 @@ class _SignSJViewInitState extends State<SignSJViewInit> {
             ),
           );
         } else if (state is ListSignSJSuccess) {
-          state.suratJalan.rowset == []
+          return state.suratJalan.rowset.isEmpty
               ? _buildEmptyState()
               : _buildShipmentDetails(state.suratJalan);
         }

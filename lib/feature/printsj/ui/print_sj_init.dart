@@ -136,7 +136,7 @@ class _PrintSJViewInitState extends State<PrintSJViewInit> {
             ),
           );
         } else if (state is ListPrintSJSuccess) {
-          state.suratJalan.rowset == []
+          return state.suratJalan.rowset.isEmpty
               ? _buildEmptyState()
               : _buildShipmentDetails(state.suratJalan);
         }
