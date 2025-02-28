@@ -62,8 +62,12 @@ class PDFSyncView extends StatefulWidget {
 
 class _PDFViewState extends State<PDFSyncView> {
   Uint8List? pdfBytes;
-  Uint8List? signature;
-  late SignatureController _signatureController;
+  late Uint8List signatureBytes;
+  SignatureController _signatureController = SignatureController(
+    penStrokeWidth: 3,
+    penColor: Colors.black,
+    exportBackgroundColor: Colors.transparent,
+  );
 
   @override
   void initState() {
@@ -74,12 +78,6 @@ class _PDFViewState extends State<PDFSyncView> {
       exportBackgroundColor: Colors.white,
     );
     _generatePDF();
-  }
-
-  void _onSigned(Uint8List data) {
-    setState(() {
-      signature = data;
-    });
   }
 
   Future<void> _generatePDF() async {
@@ -111,31 +109,76 @@ class _PDFViewState extends State<PDFSyncView> {
       ),
       body: pdfBytes == null
           ? const Center(child: CircularProgressIndicator())
-          : SfPdfViewer.memory(pdfBytes!),
-      // : Column(
-      //     children: [
-      //       SfPdfViewer.memory(pdfBytes!),
-      //       Expanded(
-      //           child: SignaturePad(
-      //         controller: _signatureController,
-      //         onSigned: _onSigned,
-      //       )),
-      //       ElevatedButton(
-      //         onPressed: signature != null
-      //             ? () => Navigator.push(
-      //                   context,
-      //                   MaterialPageRoute(
-      //                     builder: (context) => PDFPage(
-      //                       pdfBytes: pdfBytes!,
-      //                       signature: signature!,
-      //                     ),
-      //                   ),
-      //                 )
-      //             : null,
-      //         child: const Text("Lanjutkan"),
-      //       ),
-      //     ],
-      //   ),
+          // : SfPdfViewer.memory(pdfBytes!),
+          : Column(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: SfPdfViewer.memory(pdfBytes!),
+                ),
+                Container(
+                  color: Colors.white,
+                  child: const Text('Silahkan Tanda Tangan di Sini'),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Signature(
+                    controller: _signatureController,
+                    backgroundColor: Colors.white,
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      ElevatedButton(
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                            ColorCustom.primaryBlue,
+                          ),
+                        ),
+                        onPressed: () async {
+                          final signature =
+                              await _signatureController.toPngBytes();
+                          if (signature != null) {
+                            signatureBytes = signature;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PDFPage(
+                                  vehicleNumber: widget.vehicleNumber,
+                                  shipmentNumber: widget.shipmentNumber,
+                                  suratJalanNumber: widget.suratJalanNumber,
+                                  supir: widget.supir,
+                                  signatureBytes: signatureBytes,
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text("Simpan"),
+                      ),
+                      const SizedBox(
+                        width: 20,
+                      ),
+                      ElevatedButton(
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                            Colors.red,
+                          ),
+                        ),
+                        onPressed: () {
+                          _signatureController.clear();
+                        },
+                        child: const Text("Hapus"),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
     );
   }
 
@@ -497,36 +540,3 @@ class _PDFViewState extends State<PDFSyncView> {
     return pdf.save();
   }
 }
-
-// class SignaturePad extends StatelessWidget {
-//   final Function(Uint8List) onSigned;
-//   final SignatureController controller;
-
-//   const SignaturePad({
-//     super.key,
-//     required this.onSigned,
-//     required this.controller,
-//   });
-
-//   Future<void> _handleOnDrawEnd() async {
-//   final image = await _signatureController.toImage();
-//   final bytes = await image?.toByteData(format: ImageByteFormat.png);
-//   if (bytes != null) {
-//     onSigned(bytes.buffer.asUint8List());
-//   }
-// }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     controller.onDrawEnd = _handleOnDrawEnd;
-
-//     return Container(
-//       padding: const EdgeInsets.all(16.0),
-//       child: Signature(
-//         controller: controller,
-//         backgroundColor: Colors.white,
-//         width: 3.0,
-//       ),
-//     );
-//   }
-// }

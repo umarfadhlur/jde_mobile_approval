@@ -17,13 +17,16 @@ class PDFPage extends StatelessWidget {
   final String shipmentNumber;
   final String suratJalanNumber;
   final String supir;
+  final Uint8List signatureBytes;
 
-  const PDFPage(
-      {super.key,
-      required this.vehicleNumber,
-      required this.shipmentNumber,
-      required this.suratJalanNumber,
-      required this.supir});
+  const PDFPage({
+    super.key,
+    required this.vehicleNumber,
+    required this.shipmentNumber,
+    required this.suratJalanNumber,
+    required this.supir,
+    required this.signatureBytes,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +37,7 @@ class PDFPage extends StatelessWidget {
         shipmentNumber: shipmentNumber,
         suratJalanNumber: suratJalanNumber,
         supir: supir,
+        signatureBytes: signatureBytes,
       ),
     );
   }
@@ -44,13 +48,16 @@ class PDFView extends StatefulWidget {
   final String shipmentNumber;
   final String suratJalanNumber;
   final String supir;
+  final Uint8List signatureBytes;
 
-  const PDFView(
-      {super.key,
-      required this.vehicleNumber,
-      required this.shipmentNumber,
-      required this.suratJalanNumber,
-      required this.supir});
+  const PDFView({
+    super.key,
+    required this.vehicleNumber,
+    required this.shipmentNumber,
+    required this.suratJalanNumber,
+    required this.supir,
+    required this.signatureBytes,
+  });
 
   @override
   State<PDFView> createState() => _PDFViewState();
@@ -87,7 +94,7 @@ class _PDFViewState extends State<PDFView> {
             return Center(child: Text("Error: ${state.error}"));
           } else if (state is PrintSJCompleteSuccess) {
             return PdfPreview(
-              build: (format) => generatePDF(state.data),
+              build: (format) => generatePDF(state.data, widget.signatureBytes),
             );
           }
           return const SizedBox();
@@ -96,10 +103,12 @@ class _PDFViewState extends State<PDFView> {
     );
   }
 
-  Future<Uint8List> generatePDF(CompleteShipmentData data) async {
+  Future<Uint8List> generatePDF(
+      CompleteShipmentData data, Uint8List signature) async {
     final pdf = pw.Document();
     final logo = await rootBundle.load('assets/images/logoDover.png');
     final logoImage = pw.MemoryImage(logo.buffer.asUint8List());
+    final signatureImage = signature != null ? pw.MemoryImage(signature) : null;
 
     pdf.addPage(
       pw.MultiPage(
@@ -428,7 +437,8 @@ class _PDFViewState extends State<PDFView> {
                         pw.Text('Penerima',
                             style:
                                 pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                        pw.SizedBox(height: 40),
+                        if (signatureImage != null)
+                          pw.Image(signatureImage, width: 70),
                         pw.Text('(--------------------)'),
                       ],
                     ),
