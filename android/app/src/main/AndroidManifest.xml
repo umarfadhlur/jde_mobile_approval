@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.jde_mobile_approval">
    <application
-        android:label="jde_mobile_approval"
+        android:label="e-Surat Jalan"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
