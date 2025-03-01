@@ -513,15 +513,25 @@ class _PDFViewState extends State<PDFSyncView> {
                     ),
                     pw.Column(
                       children: [
-                        pw.Text('Tanggal, __________________',
-                            style:
-                                pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                        pw.Text(
+                          'Tanggal, __________________',
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.white,
+                          ),
+                        ),
                         pw.SizedBox(height: 10),
                         pw.Text('Penerima',
                             style:
                                 pw.TextStyle(fontWeight: pw.FontWeight.bold)),
                         pw.SizedBox(height: 40),
-                        pw.Text('(--------------------)'),
+                        pw.Text(
+                          '(--------------------)',
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.white,
+                          ),
+                        ),
                       ],
                     ),
                   ],
