@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 Widget approvalCount({
   required String title,
@@ -13,17 +14,17 @@ Widget approvalCount({
         borderRadius: BorderRadius.circular(10.0),
       ),
       child: ListTile(
-        leading: Icon(
+        leading: const Icon(
           Icons.file_present,
           size: 30,
         ),
         title: Text(
           title,
-          style: TextStyle(fontSize: 18.0),
+          style: GoogleFonts.dmSans(fontSize: 18.0),
         ),
         trailing: Text(
           count,
-          style: TextStyle(fontSize: 18.0),
+          style: GoogleFonts.dmSans(fontSize: 18.0),
         ),
       ),
     ),

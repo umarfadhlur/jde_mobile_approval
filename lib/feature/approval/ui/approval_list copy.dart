@@ -103,60 +103,44 @@ class ApprovalListPageState extends State<ApprovalListPage> {
       print(testExt);
       List<String> ext = testExt['fileName'].toString().split('.');
       print('Extension: ${ext.last}');
-      //   if (dlHeadAttach.statusCode == 200) {
-      //     final prefs = await SharedPreferences.getInstance();
-      //     if (ext.last == 'pdf') {
-      //       Directory tempDir = await getTemporaryDirectory();
-      //       String tempPath = tempDir.path;
-      //       File file = File('$tempPath/$doco-$dcto-$kcoo.pdf');
-      //       await file.writeAsBytes(dlHeadAttach.bodyBytes);
-      //       await prefs.setString(SharedPref.filePath, file.path);
-      //       print(prefs.getString(SharedPref.filePath));
-      //     } else if (ext.last == 'png') {
-      //       Directory tempDir = await getTemporaryDirectory();
-      //       String tempPath = tempDir.path;
-      //       File file = File('$tempPath/$doco-$dcto-$kcoo.png');
-      //       await file.writeAsBytes(dlHeadAttach.bodyBytes);
-      //       await prefs.setString(SharedPref.filePath, file.path);
-      //       print(prefs.getString(SharedPref.filePath));
-      //     } else if (ext.last == 'jpg') {
-      //       Directory tempDir = await getTemporaryDirectory();
-      //       String tempPath = tempDir.path;
-      //       File file = File('$tempPath/$doco-$dcto-$kcoo.jpg');
-      //       await file.writeAsBytes(dlHeadAttach.bodyBytes);
-      //       await prefs.setString(SharedPref.filePath, file.path);
-      //       print(prefs.getString(SharedPref.filePath));
-      //     } else if (ext.last == 'jpeg') {
-      //       Directory tempDir = await getTemporaryDirectory();
-      //       String tempPath = tempDir.path;
-      //       File file = File('$tempPath/$doco-$dcto-$kcoo.jpeg');
-      //       await file.writeAsBytes(dlHeadAttach.bodyBytes);
-      //       await prefs.setString(SharedPref.filePath, file.path);
-      //       print(prefs.getString(SharedPref.filePath));
-      //     } else {
-      //       Directory tempDir = await getTemporaryDirectory();
-      //       String tempPath = tempDir.path;
-      //       File file = File('$tempPath/$doco-$dcto-$kcoo.${ext.last}');
-      //       await file.writeAsBytes(dlHeadAttach.bodyBytes);
-      //       await prefs.setString(SharedPref.filePath, file.path);
-      //       print(prefs.getString(SharedPref.filePath));
-      //     }
-      //   } else {
-      //     print('Tidak Ada');
-      //   }
-      // } catch (value) {
       if (dlHeadAttach.statusCode == 200) {
         final prefs = await SharedPreferences.getInstance();
-        Directory tempDir = await getTemporaryDirectory();
-        String tempPath = tempDir.path;
-
-        // Gunakan ekstensi zip langsung
-        File file = File('$tempPath/$doco-$dcto-$kcoo.zip');
-        await file.writeAsBytes(dlHeadAttach.bodyBytes);
-
-        // Simpan path ke shared preferences
-        await prefs.setString(SharedPref.filePath, file.path);
-        print('File path saved: ${prefs.getString(SharedPref.filePath)}');
+        if (ext.last == 'pdf') {
+          Directory tempDir = await getTemporaryDirectory();
+          String tempPath = tempDir.path;
+          File file = File('$tempPath/$doco-$dcto-$kcoo.pdf');
+          await file.writeAsBytes(dlHeadAttach.bodyBytes);
+          await prefs.setString(SharedPref.filePath, file.path);
+          print(prefs.getString(SharedPref.filePath));
+        } else if (ext.last == 'png') {
+          Directory tempDir = await getTemporaryDirectory();
+          String tempPath = tempDir.path;
+          File file = File('$tempPath/$doco-$dcto-$kcoo.png');
+          await file.writeAsBytes(dlHeadAttach.bodyBytes);
+          await prefs.setString(SharedPref.filePath, file.path);
+          print(prefs.getString(SharedPref.filePath));
+        } else if (ext.last == 'jpg') {
+          Directory tempDir = await getTemporaryDirectory();
+          String tempPath = tempDir.path;
+          File file = File('$tempPath/$doco-$dcto-$kcoo.jpg');
+          await file.writeAsBytes(dlHeadAttach.bodyBytes);
+          await prefs.setString(SharedPref.filePath, file.path);
+          print(prefs.getString(SharedPref.filePath));
+        } else if (ext.last == 'jpeg') {
+          Directory tempDir = await getTemporaryDirectory();
+          String tempPath = tempDir.path;
+          File file = File('$tempPath/$doco-$dcto-$kcoo.jpeg');
+          await file.writeAsBytes(dlHeadAttach.bodyBytes);
+          await prefs.setString(SharedPref.filePath, file.path);
+          print(prefs.getString(SharedPref.filePath));
+        } else {
+          Directory tempDir = await getTemporaryDirectory();
+          String tempPath = tempDir.path;
+          File file = File('$tempPath/$doco-$dcto-$kcoo.${ext.last}');
+          await file.writeAsBytes(dlHeadAttach.bodyBytes);
+          await prefs.setString(SharedPref.filePath, file.path);
+          print(prefs.getString(SharedPref.filePath));
+        }
       } else {
         print('Tidak Ada');
       }

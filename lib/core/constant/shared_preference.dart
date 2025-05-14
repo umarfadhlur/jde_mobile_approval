@@ -3,6 +3,7 @@ class SharedPref {
   static String co = "co";
   static String company = "company";
   static String username = "username";
+  static String alphaName = "alphaName";
   static String password = "password";
   static String environtment = "environtment";
   static String addressnumber = "addressnumber";

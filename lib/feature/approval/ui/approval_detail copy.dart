@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:archive/archive.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -13,7 +12,6 @@ import 'package:jde_mobile_approval/feature/approval/ui/approval_list.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -277,99 +275,59 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
     );
   }
 
-  // void _handleFileAttachment() {
-  //   const String basePath =
-  //       '/data/user/0/com.example.jde_mobile_approval/cache/';
-  //   final String zipPath = '$basePath$_noPo.zip';
-  //   final file = File(zipPath);
+  void _handleFileAttachment() {
+    const String basePath =
+        '/data/user/0/com.example.jde_mobile_approval/cache/';
+    final String baseFileName = _noPo;
+    final List<String> knownExtensions = [
+      '.pdf',
+      '.jpg',
+      '.jpeg',
+      '.png',
+    ];
 
-  //   print('Mencari file: $zipPath');
+    bool fileFound = false;
 
-  //   if (file.existsSync()) {
-  //     print('Ada');
-  //     OpenFile.open(zipPath);
-  //   } else {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('File .zip tidak ditemukan')),
-  //     );
-  //   }
-  // }
-
-  void _handleFileAttachment() async {
-    const basePath = '/data/user/0/com.example.jde_mobile_approval/cache/';
-    final zipPath = '$basePath$_noPo.zip';
-    final zipFile = File(zipPath);
-
-    print('Mencari file: $zipPath');
-
-    if (!zipFile.existsSync()) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('File .zip tidak ditemukan')),
-        );
+    // Coba cari berdasarkan ekstensi yang dikenal
+    for (final ext in knownExtensions) {
+      final fullPath = '$basePath$baseFileName$ext';
+      final file = File(fullPath);
+      print(fullPath);
+      if (file.existsSync()) {
+        fileFound = true;
+        if (ext == '.pdf') {
+          _showAttachment(context);
+        } else {
+          _showPicture(context);
+        }
+        break;
       }
-      return;
     }
 
-    // Ekstrak ZIP di luar penggunaan context
-    final bytes = zipFile.readAsBytesSync();
-    final archive = ZipDecoder().decodeBytes(bytes);
-    final tempDir = await getTemporaryDirectory();
+    // Jika tidak ketemu file dengan ekstensi yang dikenal, cari file lainnya
+    if (!fileFound) {
+      final dir = Directory(basePath);
+      final List<FileSystemEntity> files = dir.listSync();
 
-    List<File> extractedFiles = [];
+      for (final entity in files) {
+        print('entity.path: ${entity.path}');
+        if (entity is File) {
+          final fileName = path.basename(entity.path);
+          final nameWithoutExt = path.basenameWithoutExtension(fileName);
 
-    for (final archiveFile in archive) {
-      if (!archiveFile.isFile) continue;
-
-      final fileName = archiveFile.name;
-      final data = archiveFile.content as List<int>;
-      final outFile = File('${tempDir.path}/$fileName');
-      await outFile.create(recursive: true);
-      await outFile.writeAsBytes(data);
-      extractedFiles.add(outFile);
+          if (nameWithoutExt == baseFileName) {
+            OpenFile.open(entity.path);
+            fileFound = true;
+            break;
+          }
+        }
+      }
     }
 
-    if (context.mounted) {
-      if (extractedFiles.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Tidak ada file yang berhasil diekstrak')),
-        );
-        return;
-      }
-
-      // Baru gunakan context di sini (sudah aman)
-      showDialog(
-        context: context,
-        builder: (ctx) {
-          return AlertDialog(
-            title: const Text('Extracted Files'),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: extractedFiles.length,
-                itemBuilder: (ctx, index) {
-                  final file = extractedFiles[index];
-                  final fileName = path.basename(file.path);
-                  return ListTile(
-                    title: Text(fileName),
-                    onTap: () {
-                      Navigator.of(ctx).pop();
-                      OpenFile.open(file.path);
-                    },
-                  );
-                },
-              ),
-            ),
-            actions: [
-              TextButton(
-                child: const Text('Close'),
-                onPressed: () => Navigator.of(ctx).pop(),
-              ),
-            ],
-          );
-        },
+    // Optional: tampilkan notifikasi jika file tidak ditemukan
+    if (!fileFound) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('File tidak ditemukan')),
       );
     }
   }

@@ -54,7 +54,7 @@ class WaitingListApprovalBloc
           // Sort rowset1 by orderDate
           rowset1.sort((a, b) => b.orderDate.compareTo(a.orderDate));
 
-          print('Sorted data: $rowset1');
+          print('Sorted data: ${rowset1.length}');
           yield ArticleLoadedState(articles: rowset1);
         } catch (e) {
           yield ArticleErrorState(message: "Data Tidak di temukan");
@@ -80,7 +80,7 @@ class WaitingListApprovalBloc
       List<ApvList> rowset1 = [];
       List<ApvList> rowset2 = [];
 
-      if (event.personResponsible != null) {
+      if (event.personResponsible.isNotEmpty) {
         try {
           print('No data ${event.personResponsible}');
           rowset2.clear();
@@ -90,7 +90,7 @@ class WaitingListApprovalBloc
           // Sort rowset1 by orderDate
           rowset1.sort((a, b) => b.orderDate.compareTo(a.orderDate));
 
-          print('Sorted data: $rowset1');
+          print('Sorted data: ${rowset1.length}');
           yield ArticleLoadedState(articles: rowset1);
         } catch (e) {
           yield ArticleErrorState(message: "Data Tidak di temukan");
@@ -106,7 +106,6 @@ class WaitingListApprovalBloc
 
           if (rowset1.isNotEmpty) {
             yield ArticleLoadedState(articles: rowset1);
-            print('data1');
           } else {
             yield ArticleErrorState(message: 'Data Kosong');
           }

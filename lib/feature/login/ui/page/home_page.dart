@@ -1,8 +1,14 @@
+import 'package:bot_toast/bot_toast.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jde_mobile_approval/core/constant/color.dart';
+import 'package:jde_mobile_approval/feature/approval/ui/approval_list.dart';
 import 'package:jde_mobile_approval/feature/generatesj/ui/generate_sj.dart';
 import 'package:flutter/material.dart';
 import 'package:jde_mobile_approval/core/constant/shared_preference.dart';
+import 'package:jde_mobile_approval/feature/login/bloc/login_bloc.dart';
+import 'package:jde_mobile_approval/feature/login/data/repository/login_repo.dart';
+import 'package:jde_mobile_approval/feature/login/ui/page/login_page.dart';
 import 'package:jde_mobile_approval/feature/printsj/ui/print_sj_init.dart';
 import 'package:jde_mobile_approval/feature/signsj/ui/sign_sj_init.dart';
 import 'package:jde_mobile_approval/feature/updatesj/ui/update_sj_init.dart';
@@ -17,7 +23,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String _environment = "", _username = "", _token = "";
+  String _environment = "", _username = "", _token = "", _alphaName = "";
 
   @override
   void initState() {
@@ -25,11 +31,15 @@ class _HomePageState extends State<HomePage> {
     _loadUserData();
   }
 
+  final LoginBloc _addLoginBloc =
+      LoginBloc(loginRepository: LoginRepositoryImpl());
+
   Future<void> _loadUserData() async {
     final prefVal = await SharedPreferences.getInstance();
 
     setState(() {
       _username = prefVal.getString(SharedPref.username) ?? "";
+      _alphaName = prefVal.getString(SharedPref.alphaName) ?? "";
       _environment = prefVal.getString(SharedPref.environtment) ?? "";
       _token = prefVal.getString(SharedPref.token) ?? "";
     });
@@ -95,7 +105,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     Text(
-                      _username.isNotEmpty ? _username : 'User',
+                      _alphaName.isNotEmpty ? _alphaName : 'User',
                       style: GoogleFonts.dmSans(
                         color: Colors.white,
                         fontSize: 24,
@@ -103,6 +113,24 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ],
+                ),
+              ),
+              Positioned(
+                top: 30,
+                right: 15,
+                child: IconButton(
+                  onPressed: () async {
+                    BotToast.showLoading(
+                        duration: const Duration(milliseconds: 500));
+                    _addLoginBloc.add(LogoutSubmit(token: _token));
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.clear();
+                    Get.off(() => const LoginPage());
+                  },
+                  icon: const Icon(
+                    Icons.exit_to_app,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],
@@ -137,8 +165,8 @@ class _HomePageState extends State<HomePage> {
                       child: GridView.count(
                         crossAxisCount: 2,
                         childAspectRatio: 1.2,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
                         children: [
                           // menuCard(
                           //   'Generate\nSurat Jalan',
@@ -165,26 +193,39 @@ class _HomePageState extends State<HomePage> {
                           //     );
                           //   },
                           // ),
+                          // menuCard(
+                          //   'Cetak\nSurat Jalan',
+                          //   'assets/images/cetaksj.png',
+                          //   onPressed: () {
+                          //     Navigator.push(
+                          //       context,
+                          //       MaterialPageRoute(
+                          //         builder: (context) => const PrintSJPageInit(),
+                          //       ),
+                          //     );
+                          //   },
+                          // ),
+                          // menuCard(
+                          //   'Sign\nE-Surat Jalan',
+                          //   'assets/images/signsj.png',
+                          //   onPressed: () {
+                          //     Navigator.push(
+                          //       context,
+                          //       MaterialPageRoute(
+                          //         builder: (context) => const SignSJPageInit(),
+                          //       ),
+                          //     );
+                          //   },
+                          // ),
                           menuCard(
-                            'Cetak\nSurat Jalan',
+                            'Approval List',
                             'assets/images/cetaksj.png',
                             onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const PrintSJPageInit(),
-                                ),
-                              );
-                            },
-                          ),
-                          menuCard(
-                            'Sign\nE-Surat Jalan',
-                            'assets/images/signsj.png',
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const SignSJPageInit(),
+                                  builder: (context) =>
+                                      const ApprovalListPage(),
                                 ),
                               );
                             },
@@ -223,7 +264,7 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(height: 8),
           Text(title,
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(fontSize: 16)),
+              style: GoogleFonts.dmSans(fontSize: 14)),
         ],
       ),
     );

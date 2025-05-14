@@ -60,6 +60,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
               SharedPref.addressnumber, user.userInfo.addressNumber.toString());
           await sharedPreferences.setString(SharedPref.username, user.username);
           await sharedPreferences.setString(
+              SharedPref.alphaName, user.userInfo.alphaName);
+          await sharedPreferences.setString(
               SharedPref.password, event.password);
           await sharedPreferences.setString(
               SharedPref.environtment, user.environment);

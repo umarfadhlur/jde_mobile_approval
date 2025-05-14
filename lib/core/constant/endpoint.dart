@@ -72,7 +72,8 @@ class EndPoint {
   //Add Notes
   static String addNotes = "$_baseUrl/orchestrator/RUD_ADDWOTEXT_P17714_ORC";
   static String test = "$_baseUrl/orchestrator/DownloadORDerAttachmentFiles";
-  static String dlAttach = "$_baseUrl/orchestrator/UF_DOWNLOAD_FILES";
+  static String dlAttach = "$_baseUrl/orchestrator/UF_DOWNLOAD_ALL";
+  // static String dlAttach = "$_baseUrl/orchestrator/UF_DOWNLOAD_FILES";
   static String notification = "$_baseUrl/orchestrator/UF_GETNOTIFICATIONS";
   static String watchlist = "$_baseUrl/orchestrator/AB_GetWatchList";
   static String newWatchlist = "$_baseUrl/orchestrator/AB_GetwatchListFinal";
