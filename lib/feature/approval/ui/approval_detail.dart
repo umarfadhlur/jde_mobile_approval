@@ -175,7 +175,7 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
                     ),
                     SizedBox(height: 5),
                     _buildDetailRow('Total:',
-                        '${oCcy.format(int.parse(_quantityOrdered))} $_curCod'),
+                        '${oCcy.format(int.parse(_quantityOrdered) / 100)} $_curCod'),
                     _buildDetailRow('Requested:', _orderDate),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10.0),
@@ -343,7 +343,7 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
         context: context,
         builder: (ctx) {
           return AlertDialog(
-            title: const Text('Extracted Files'),
+            title: const Text('Attached Files'),
             content: SizedBox(
               width: double.maxFinite,
               child: ListView.builder(

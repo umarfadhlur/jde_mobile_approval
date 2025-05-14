@@ -348,12 +348,10 @@ class ApprovalListPageState extends State<ApprovalListPage> {
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            oCcy.format(
-                                                  articles[item]
-                                                      .quantityOrdered,
-                                                ) +
-                                                ' ' +
-                                                articles[item].curCod,
+                                            '${oCcy.format(
+                                              (articles[item].quantityOrdered /
+                                                  100),
+                                            )} ${articles[item].curCod}',
                                             style: GoogleFonts.dmSans(
                                               fontSize: 13,
                                             ),
