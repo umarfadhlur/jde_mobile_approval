@@ -52,7 +52,7 @@ class ApprovalListPageState extends State<ApprovalListPage> {
     super.initState();
   }
 
-  void getFile(String doco, String dcto, String kcoo) async {
+  Future<void> getFile(String doco, String dcto, String kcoo) async {
     Map recBody = {
       "username": "jde",
       "password": "jde",
@@ -70,7 +70,6 @@ class ApprovalListPageState extends State<ApprovalListPage> {
         {"name": "szOrdertype", "value": dcto},
         {"name": "szDocumentCompany", "value": kcoo},
         {"name": "szOrderSuffix", "value": "000"}
-        // {"name": "sq", "value": "1"}
       ]
     };
 
@@ -280,9 +279,11 @@ class ApprovalListPageState extends State<ApprovalListPage> {
                               SharedPref.company, articles[item].orderCo);
                           await prefs.setString(
                               SharedPref.curCod, articles[item].curCod);
-                          getFile(articles[item].orderNumber.toString(),
-                              articles[item].orTy, articles[item].orderCo);
-                          Future.delayed(const Duration(seconds: 5), () {
+                          getFile(
+                            articles[item].orderNumber.toString(),
+                            articles[item].orTy,
+                            articles[item].orderCo,
+                          ).then((_) {
                             Get.to(() => ApprovalDetailPage());
                           });
                         },
