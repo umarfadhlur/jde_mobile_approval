@@ -32,6 +32,7 @@ class ApprovalListPageState extends State<ApprovalListPage> {
 
   late String _company, _username, _environment, _address;
   final oCcy = NumberFormat("#,##0.00", "en_US");
+  final TextEditingController _description = TextEditingController();
 
   void initState() {
     SharedPreferences.getInstance().then(
@@ -96,54 +97,6 @@ class ApprovalListPageState extends State<ApprovalListPage> {
             "Accept": "application/octet-stream",
           },
           body: utf8.encode(json.encode(attBody)));
-
-      // Take File Extension
-      var testExt = jsonDecode(checkHeadExt.body);
-      print(testExt);
-      List<String> ext = testExt['fileName'].toString().split('.');
-      print('Extension: ${ext.last}');
-      //   if (dlHeadAttach.statusCode == 200) {
-      //     final prefs = await SharedPreferences.getInstance();
-      //     if (ext.last == 'pdf') {
-      //       Directory tempDir = await getTemporaryDirectory();
-      //       String tempPath = tempDir.path;
-      //       File file = File('$tempPath/$doco-$dcto-$kcoo.pdf');
-      //       await file.writeAsBytes(dlHeadAttach.bodyBytes);
-      //       await prefs.setString(SharedPref.filePath, file.path);
-      //       print(prefs.getString(SharedPref.filePath));
-      //     } else if (ext.last == 'png') {
-      //       Directory tempDir = await getTemporaryDirectory();
-      //       String tempPath = tempDir.path;
-      //       File file = File('$tempPath/$doco-$dcto-$kcoo.png');
-      //       await file.writeAsBytes(dlHeadAttach.bodyBytes);
-      //       await prefs.setString(SharedPref.filePath, file.path);
-      //       print(prefs.getString(SharedPref.filePath));
-      //     } else if (ext.last == 'jpg') {
-      //       Directory tempDir = await getTemporaryDirectory();
-      //       String tempPath = tempDir.path;
-      //       File file = File('$tempPath/$doco-$dcto-$kcoo.jpg');
-      //       await file.writeAsBytes(dlHeadAttach.bodyBytes);
-      //       await prefs.setString(SharedPref.filePath, file.path);
-      //       print(prefs.getString(SharedPref.filePath));
-      //     } else if (ext.last == 'jpeg') {
-      //       Directory tempDir = await getTemporaryDirectory();
-      //       String tempPath = tempDir.path;
-      //       File file = File('$tempPath/$doco-$dcto-$kcoo.jpeg');
-      //       await file.writeAsBytes(dlHeadAttach.bodyBytes);
-      //       await prefs.setString(SharedPref.filePath, file.path);
-      //       print(prefs.getString(SharedPref.filePath));
-      //     } else {
-      //       Directory tempDir = await getTemporaryDirectory();
-      //       String tempPath = tempDir.path;
-      //       File file = File('$tempPath/$doco-$dcto-$kcoo.${ext.last}');
-      //       await file.writeAsBytes(dlHeadAttach.bodyBytes);
-      //       await prefs.setString(SharedPref.filePath, file.path);
-      //       print(prefs.getString(SharedPref.filePath));
-      //     }
-      //   } else {
-      //     print('Tidak Ada');
-      //   }
-      // } catch (value) {
       if (dlHeadAttach.statusCode == 200) {
         final prefs = await SharedPreferences.getInstance();
         Directory tempDir = await getTemporaryDirectory();
@@ -197,6 +150,19 @@ class ApprovalListPageState extends State<ApprovalListPage> {
                 ),
               );
             }
+            if (state is ApproveSuccess || state is RejectSuccess) {
+              BotToast.closeAllLoading();
+
+              final isApprove = state is ApproveSuccess;
+              _showSuccessDialog(context,
+                  title: isApprove
+                      ? "Purchase Order Approved!"
+                      : "Purchase Order Rejected!",
+                  message: isApprove
+                      ? "Purchase order has been approved."
+                      : "Purchase order has been rejected.",
+                  onClose: () => Get.offAll(const ApprovalListPage()));
+            }
           },
           child: BlocBuilder<WaitingListApprovalBloc, WaitingListApprovalState>(
             bloc: _waitingListApprovalBloc,
@@ -242,165 +208,150 @@ class ApprovalListPageState extends State<ApprovalListPage> {
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
                   itemCount: articles.length,
-                  itemBuilder: (context, item) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
+                  itemBuilder: (context, index) {
+                    final item = articles[index];
+
+                    return Dismissible(
+                      key: ValueKey(item.orderNumber), // pastikan unik
+                      direction: DismissDirection.horizontal,
+                      background: Container(
+                        color: Colors.green,
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.only(left: 20),
+                        child: const Icon(Icons.check, color: Colors.white),
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.transparent,
-                        borderRadius: BorderRadius.circular(10.0),
+                      secondaryBackground: Container(
+                        color: Colors.red,
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 20),
+                        child: const Icon(Icons.close, color: Colors.white),
                       ),
+                      confirmDismiss: (direction) async {
+                        if (direction == DismissDirection.startToEnd) {
+                          await handleApprove(item);
+                        } else if (direction == DismissDirection.endToStart) {
+                          await handleReject(item);
+                          // return true;
+                        }
+                        return false;
+                      },
                       child: InkWell(
                         onTap: () async {
                           BotToast.showLoading();
                           final prefs = await SharedPreferences.getInstance();
                           await prefs.setString(
-                              SharedPref.origName, articles[item].origName);
-                          await prefs.setString(SharedPref.supplierName,
-                              articles[item].supplierName);
+                              SharedPref.origName, item.origName);
+                          await prefs.setString(
+                              SharedPref.supplierName, item.supplierName);
                           await prefs.setString(SharedPref.quantityOrdered,
-                              articles[item].quantityOrdered.toString());
-                          await prefs.setString(
-                            SharedPref.orderDate,
-                            articles[item]
-                                .orderDate
-                                .toString()
-                                .substring(0, 10),
-                          );
+                              item.quantityOrdered.toString());
+                          await prefs.setString(SharedPref.orderDate,
+                              item.orderDate.toString().substring(0, 10));
                           await prefs.setString(SharedPref.orderNumber,
-                              articles[item].orderNumber.toString());
+                              item.orderNumber.toString());
+                          await prefs.setString(SharedPref.noPo, item.noPo);
+                          await prefs.setString(SharedPref.orTy, item.orTy);
                           await prefs.setString(
-                              SharedPref.noPo, articles[item].noPo);
-                          await prefs.setString(
-                              SharedPref.orTy, articles[item].orTy);
-                          await prefs.setString(
-                              SharedPref.company, articles[item].orderCo);
-                          await prefs.setString(
-                              SharedPref.curCod, articles[item].curCod);
-                          getFile(
-                            articles[item].orderNumber.toString(),
-                            articles[item].orTy,
-                            articles[item].orderCo,
-                          ).then((_) {
-                            Get.to(() => ApprovalDetailPage());
+                              SharedPref.company, item.orderCo);
+                          await prefs.setString(SharedPref.curCod, item.curCod);
+
+                          await getFile(item.orderNumber.toString(), item.orTy,
+                                  item.orderCo)
+                              .then((_) {
+                            Get.to(() => const ApprovalDetailPage());
                           });
                         },
                         child: Container(
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  flex: 10,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            flex: 1,
-                                            child: Text(
-                                              articles[item].origName,
-                                              style: GoogleFonts.dmSans(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                flex: 10,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 1,
+                                          child: Text(
+                                            item.origName,
+                                            style: GoogleFonts.dmSans(
                                                 fontSize: 18,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
+                                                fontWeight: FontWeight.w600),
                                           ),
-                                          Expanded(
-                                            flex: 1,
-                                            child: Text(
-                                              articles[item].branch,
-                                              style: GoogleFonts.dmSans(
-                                                fontSize: 13,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            articles[item].supplierName,
+                                        ),
+                                        Expanded(
+                                          flex: 1,
+                                          child: Text(
+                                            item.branch,
                                             style: GoogleFonts.dmSans(
-                                              fontSize: 13,
-                                            ),
+                                                fontSize: 13),
                                           ),
-                                          Text(
-                                            '',
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          item.supplierName,
+                                          style:
+                                              GoogleFonts.dmSans(fontSize: 13),
+                                        ),
+                                        const Text('',
+                                            style: TextStyle(fontSize: 13)),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          '${oCcy.format(item.quantityOrdered / 100)} ${item.curCod}',
+                                          style:
+                                              GoogleFonts.dmSans(fontSize: 13),
+                                        ),
+                                        const Text('',
+                                            style: TextStyle(fontSize: 13)),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          flex: 1,
+                                          child: Text(
+                                            item.noPo,
                                             style: GoogleFonts.dmSans(
-                                              fontSize: 13,
-                                            ),
+                                                fontSize: 13),
                                           ),
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            '${oCcy.format(
-                                              (articles[item].quantityOrdered /
-                                                  100),
-                                            )} ${articles[item].curCod}',
+                                        ),
+                                        Expanded(
+                                          flex: 1,
+                                          child: Text(
+                                            item.orderDate
+                                                .toString()
+                                                .substring(0, 10),
                                             style: GoogleFonts.dmSans(
-                                              fontSize: 13,
-                                            ),
+                                                fontSize: 13),
                                           ),
-                                          Text(
-                                            '',
-                                            style: GoogleFonts.dmSans(
-                                              fontSize: 13,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            flex: 1,
-                                            child: Text(
-                                              articles[item].noPo,
-                                              style: GoogleFonts.dmSans(
-                                                fontSize: 13,
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            flex: 1,
-                                            child: Text(
-                                              articles[item]
-                                                  .orderDate
-                                                  .toString()
-                                                  .substring(0, 10),
-                                              style: GoogleFonts.dmSans(
-                                                fontSize: 13,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                                Expanded(
-                                  flex: 1,
-                                  child: Icon(Icons.chevron_right),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -410,5 +361,407 @@ class ApprovalListPageState extends State<ApprovalListPage> {
               ],
             ),
           );
+  }
+
+  Future<void> handleApprove(ApvList item) async {
+    // _waitingListApprovalBloc.add(
+    //   ApproveEntry(
+    //     orderNumber: item.orderNumber.toString(),
+    //   ),
+    // );
+    // BotToast.showLoading();
+    _showDialogApprove(
+      context,
+      item.origName,
+      item.supplierName,
+      item.noPo,
+      item.orderNumber,
+    );
+  }
+
+  Future<void> handleReject(ApvList item) async {
+    _showDialogReject(
+      context,
+      item.origName,
+      item.supplierName,
+      item.noPo,
+      item.orderNumber,
+    );
+  }
+
+  void _showSuccessDialog(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required VoidCallback onClose,
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/Success.gif',
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                ),
+                const SizedBox(height: 16),
+
+                // Judul
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Pesan
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Tombol
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      onClose();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorCustom.primaryBlue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      "Close",
+                      style: GoogleFonts.dmSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showDialogApprove(
+    BuildContext context,
+    String origName,
+    String supplierName,
+    String noPo,
+    int orderNumber,
+  ) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Text(
+                    "Approve Confirmation",
+                    style: GoogleFonts.dmSans(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                const Divider(thickness: 1),
+                Center(
+                  child: Text(
+                    "Are you sure you want to approve\nthis Purchase Order?",
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 16,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 12,
+                ),
+                // Informasi PO
+                Text(
+                  origName,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  supplierName,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    noPo,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    // Approve
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _waitingListApprovalBloc.add(
+                            ApproveEntry(orderNumber: orderNumber.toString()),
+                          );
+                          BotToast.showLoading();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: Text(
+                          'Approve',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+
+                    // Cancel
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ColorCustom.primaryBlue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showDialogReject(
+    BuildContext context,
+    String origName,
+    String supplierName,
+    String noPo,
+    int orderNumber,
+  ) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final isRemarksEmpty = _description.text.trim().isEmpty;
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Text(
+                        "Reject Confirmation",
+                        style: GoogleFonts.dmSans(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const Divider(thickness: 1),
+
+                    // Informasi PO
+                    Text(
+                      origName,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      supplierName,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Text(
+                        noPo,
+                        style: GoogleFonts.dmSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[800],
+                        ),
+                      ),
+                    ),
+
+                    // Input Remarks
+                    TextField(
+                      controller: _description,
+                      onChanged: (_) => setState(() {}),
+                      decoration: const InputDecoration(
+                        labelText: 'Remarks (Required)',
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                    ),
+
+                    // Error di bawah TextField
+                    if (isRemarksEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6, left: 4),
+                        child: Text(
+                          'Remarks must be filled!',
+                          style: TextStyle(
+                            color: Colors.red[700],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: isRemarksEmpty
+                                ? null
+                                : () {
+                                    _waitingListApprovalBloc.add(
+                                      RejectEntry(
+                                        orderNumber: orderNumber.toString(),
+                                        remarks: _description.text,
+                                      ),
+                                    );
+                                    Navigator.pop(context);
+                                    BotToast.showLoading();
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              disabledBackgroundColor: Colors.red.shade100,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            child: Text(
+                              'Reject',
+                              style: GoogleFonts.dmSans(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: isRemarksEmpty
+                                    ? Colors.white60
+                                    : Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // Tombol Cancel
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: ColorCustom.primaryBlue,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: GoogleFonts.dmSans(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }

@@ -104,20 +104,21 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
               BotToast.closeAllLoading();
             }
             if (state is ApproveSuccess || state is RejectSuccess) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    state is ApproveSuccess
-                        ? 'Approval Success'
-                        : 'Reject Success',
-                  ),
-                  backgroundColor: Colors.green,
-                ),
+              BotToast.closeAllLoading();
+
+              final isApprove = state is ApproveSuccess;
+              _showSuccessDialog(
+                context,
+                title: isApprove
+                    ? "Purchase Order Approved!"
+                    : "Purchase Order Rejected!",
+                message: isApprove
+                    ? "Purchase order has been approved."
+                    : "Purchase order has been rejected.",
+                onClose: () {
+                  Get.off(const ApprovalListPage());
+                },
               );
-              Future.delayed(Duration(seconds: 1), () {
-                BotToast.closeAllLoading();
-                Get.off(ApprovalListPage());
-              });
             }
           },
           child: BlocBuilder<WaitingListApprovalBloc, WaitingListApprovalState>(
@@ -125,7 +126,7 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
               if (state is DetailLoadedState) {
                 return buildList(state.details);
               }
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             },
           ),
         ),
@@ -277,24 +278,6 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
     );
   }
 
-  // void _handleFileAttachment() {
-  //   const String basePath =
-  //       '/data/user/0/com.example.jde_mobile_approval/cache/';
-  //   final String zipPath = '$basePath$_noPo.zip';
-  //   final file = File(zipPath);
-
-  //   print('Mencari file: $zipPath');
-
-  //   if (file.existsSync()) {
-  //     print('Ada');
-  //     OpenFile.open(zipPath);
-  //   } else {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('File .zip tidak ditemukan')),
-  //     );
-  //   }
-  // }
-
   void _handleFileAttachment() async {
     const basePath = '/data/user/0/com.example.jde_mobile_approval/cache/';
     final zipPath = '$basePath$_noPo.zip';
@@ -311,7 +294,6 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
       return;
     }
 
-    // Ekstrak ZIP di luar penggunaan context
     final bytes = zipFile.readAsBytesSync();
     final archive = ZipDecoder().decodeBytes(bytes);
     final tempDir = await getTemporaryDirectory();
@@ -338,36 +320,97 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
         return;
       }
 
-      // Baru gunakan context di sini (sudah aman)
       showDialog(
         context: context,
         builder: (ctx) {
-          return AlertDialog(
-            title: const Text('Attached Files'),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: extractedFiles.length,
-                itemBuilder: (ctx, index) {
-                  final file = extractedFiles[index];
-                  final fileName = path.basename(file.path);
-                  return ListTile(
-                    title: Text(fileName),
-                    onTap: () {
-                      Navigator.of(ctx).pop();
-                      OpenFile.open(file.path);
-                    },
-                  );
-                },
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Judul
+                  Row(
+                    children: [
+                      Icon(Icons.attach_file, color: ColorCustom.primaryBlue),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Attached Files',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // List file dengan scrollbar
+                  SizedBox(
+                    height: 200,
+                    child: Scrollbar(
+                      thumbVisibility: true,
+                      radius: const Radius.circular(8),
+                      child: ListView.separated(
+                        itemCount: extractedFiles.length,
+                        separatorBuilder: (_, __) => const Divider(),
+                        itemBuilder: (ctx, index) {
+                          final file = extractedFiles[index];
+                          final fileName = path.basename(file.path);
+                          final extension =
+                              path.extension(file.path).toLowerCase();
+
+                          final icon = extension == '.pdf'
+                              ? Icons.picture_as_pdf
+                              : extension == '.jpg' ||
+                                      extension == '.jpeg' ||
+                                      extension == '.png'
+                                  ? Icons.image
+                                  : Icons.insert_drive_file;
+
+                          return ListTile(
+                            leading: Icon(icon, color: ColorCustom.primaryBlue),
+                            title: Text(
+                              fileName,
+                              style: GoogleFonts.dmSans(
+                                  fontWeight: FontWeight.w500),
+                            ),
+                            onTap: () => OpenFile.open(file.path),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Tombol Tutup
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ColorCustom.primaryBlue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: Text(
+                        'Close',
+                        style: GoogleFonts.dmSans(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            actions: [
-              TextButton(
-                child: const Text('Close'),
-                onPressed: () => Navigator.of(ctx).pop(),
-              ),
-            ],
           );
         },
       );
@@ -376,116 +419,146 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
 
   Future<void> _showDialog(BuildContext context) async {
     Size size = MediaQuery.of(context).size;
-    return showDialog(
+
+    showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: EdgeInsets.all(10),
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
-            children: <Widget>[
-              Container(
-                width: double.infinity,
-                height: size.height * 0.4,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    color: Colors.white),
-                padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final isRemarksEmpty = _description.text.trim().isEmpty;
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Center(
                       child: Text(
-                        "Reject Confirmations",
-                        style: GoogleFonts.dmSans(fontSize: 24),
+                        "Reject Confirmation",
+                        style: GoogleFonts.dmSans(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
-                    Divider(
-                      thickness: 1.0,
-                    ),
+                    const Divider(thickness: 1),
+
+                    // Informasi PO
                     Text(
                       _origName,
                       style: GoogleFonts.dmSans(
-                        fontSize: 24,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
                       _supplierName,
                       style: GoogleFonts.dmSans(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 10.0,
-                      ),
+                      padding: const EdgeInsets.only(bottom: 8.0),
                       child: Text(
                         _noPo,
                         style: GoogleFonts.dmSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[800],
                         ),
                       ),
                     ),
+
+                    // Input Remarks
                     TextField(
                       controller: _description,
-                      decoration: InputDecoration(
+                      onChanged: (_) => setState(() {}),
+                      decoration: const InputDecoration(
                         labelText: 'Remarks (Required)',
                         border: OutlineInputBorder(),
                         isDense: true,
                       ),
                     ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              minimumSize:
-                                  Size(size.width * 0.3, size.width * 0.1)),
-                          onPressed: () {
-                            if (_description.text.length == 0) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Remarks Cannot be Empty'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            } else {
-                              _waitingListApprovalBloc.add(
-                                RejectEntry(
-                                  orderNumber: _orderNumber,
-                                  remarks: _description.text,
-                                ),
-                              );
-                              Navigator.pop(context);
-                              BotToast.showLoading();
-                            }
-                          },
-                          child: Text(
-                            'Reject',
-                            style: GoogleFonts.dmSans(),
+
+                    // Error di bawah TextField
+                    if (isRemarksEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6, left: 4),
+                        child: Text(
+                          'Remarks must be filled!',
+                          style: TextStyle(
+                            color: Colors.red[700],
+                            fontSize: 12,
                           ),
                         ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: ColorCustom.blueColor,
-                              minimumSize:
-                                  Size(size.width * 0.3, size.width * 0.1)),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: Text(
-                            'Cancel',
-                            style: GoogleFonts.dmSans(),
+                      ),
+
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: isRemarksEmpty
+                                ? null
+                                : () {
+                                    _waitingListApprovalBloc.add(
+                                      RejectEntry(
+                                        orderNumber: _orderNumber,
+                                        remarks: _description.text,
+                                      ),
+                                    );
+                                    Navigator.pop(context);
+                                    BotToast.showLoading();
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              disabledBackgroundColor: Colors.red.shade100,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            child: Text(
+                              'Reject',
+                              style: GoogleFonts.dmSans(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: isRemarksEmpty
+                                    ? Colors.white60
+                                    : Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // Tombol Cancel
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: ColorCustom.primaryBlue,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: GoogleFonts.dmSans(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -493,70 +566,91 @@ class ApprovalDetailPageState extends State<ApprovalDetailPage> {
                   ],
                 ),
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 
-  Future<void> _showAttachment(BuildContext context) async {
-    Size size = MediaQuery.of(context).size;
-    return showDialog(
+  void _showSuccessDialog(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required VoidCallback onClose,
+  }) {
+    showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
         return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: EdgeInsets.all(10),
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
-            children: <Widget>[
-              Container(
-                width: double.infinity,
-                height: size.height * 0.65,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    color: Colors.white),
-                padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
-                child: File('/data/user/0/com.example.jde_mobile_approval/cache/$_noPo.pdf')
-                            .existsSync() ==
-                        true
-                    ? SfPdfViewer.file(File(
-                        '/data/user/0/com.example.jde_mobile_approval/cache/$_noPo.pdf'))
-                    : const Center(child: Text('No Attachment')),
-              ),
-            ],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-        );
-      },
-    );
-  }
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/Success.gif',
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                ),
+                const SizedBox(height: 16),
 
-  Future<void> _showPicture(BuildContext context) async {
-    Size size = MediaQuery.of(context).size;
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: EdgeInsets.all(10),
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
-            children: <Widget>[
-              Container(
-                width: double.infinity,
-                height: size.height * 0.65,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    color: Colors.white),
-                padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
-                child: File(_filePath).existsSync() == true
-                    ? PhotoView(imageProvider: FileImage(File(_filePath)))
-                    : Center(child: Text('No Attachment')),
-              ),
-            ],
+                // Judul
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Pesan
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Tombol
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      onClose();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorCustom.primaryBlue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      "Close",
+                      style: GoogleFonts.dmSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

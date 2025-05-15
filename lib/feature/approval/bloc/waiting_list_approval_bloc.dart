@@ -44,7 +44,7 @@ class WaitingListApprovalBloc
       List<ApvList> rowset1 = [];
       List<ApvList> rowset2 = [];
 
-      if (event.descriptionF1201 != null) {
+      if (event.descriptionF1201.isEmpty) {
         try {
           print('No data ${event.descriptionF1201}');
           rowset2.clear();

@@ -52,7 +52,7 @@ class ApprovalListPageState extends State<ApprovalListPage> {
     super.initState();
   }
 
-  void getFile(String doco, String dcto, String kcoo) async {
+  Future<void> getFile(String doco, String dcto, String kcoo) async {
     Map recBody = {
       "username": "jde",
       "password": "jde",
@@ -70,7 +70,6 @@ class ApprovalListPageState extends State<ApprovalListPage> {
         {"name": "szOrdertype", "value": dcto},
         {"name": "szDocumentCompany", "value": kcoo},
         {"name": "szOrderSuffix", "value": "000"}
-        // {"name": "sq", "value": "1"}
       ]
     };
 
@@ -97,50 +96,18 @@ class ApprovalListPageState extends State<ApprovalListPage> {
             "Accept": "application/octet-stream",
           },
           body: utf8.encode(json.encode(attBody)));
-
-      // Take File Extension
-      var testExt = jsonDecode(checkHeadExt.body);
-      print(testExt);
-      List<String> ext = testExt['fileName'].toString().split('.');
-      print('Extension: ${ext.last}');
       if (dlHeadAttach.statusCode == 200) {
         final prefs = await SharedPreferences.getInstance();
-        if (ext.last == 'pdf') {
-          Directory tempDir = await getTemporaryDirectory();
-          String tempPath = tempDir.path;
-          File file = File('$tempPath/$doco-$dcto-$kcoo.pdf');
-          await file.writeAsBytes(dlHeadAttach.bodyBytes);
-          await prefs.setString(SharedPref.filePath, file.path);
-          print(prefs.getString(SharedPref.filePath));
-        } else if (ext.last == 'png') {
-          Directory tempDir = await getTemporaryDirectory();
-          String tempPath = tempDir.path;
-          File file = File('$tempPath/$doco-$dcto-$kcoo.png');
-          await file.writeAsBytes(dlHeadAttach.bodyBytes);
-          await prefs.setString(SharedPref.filePath, file.path);
-          print(prefs.getString(SharedPref.filePath));
-        } else if (ext.last == 'jpg') {
-          Directory tempDir = await getTemporaryDirectory();
-          String tempPath = tempDir.path;
-          File file = File('$tempPath/$doco-$dcto-$kcoo.jpg');
-          await file.writeAsBytes(dlHeadAttach.bodyBytes);
-          await prefs.setString(SharedPref.filePath, file.path);
-          print(prefs.getString(SharedPref.filePath));
-        } else if (ext.last == 'jpeg') {
-          Directory tempDir = await getTemporaryDirectory();
-          String tempPath = tempDir.path;
-          File file = File('$tempPath/$doco-$dcto-$kcoo.jpeg');
-          await file.writeAsBytes(dlHeadAttach.bodyBytes);
-          await prefs.setString(SharedPref.filePath, file.path);
-          print(prefs.getString(SharedPref.filePath));
-        } else {
-          Directory tempDir = await getTemporaryDirectory();
-          String tempPath = tempDir.path;
-          File file = File('$tempPath/$doco-$dcto-$kcoo.${ext.last}');
-          await file.writeAsBytes(dlHeadAttach.bodyBytes);
-          await prefs.setString(SharedPref.filePath, file.path);
-          print(prefs.getString(SharedPref.filePath));
-        }
+        Directory tempDir = await getTemporaryDirectory();
+        String tempPath = tempDir.path;
+
+        // Gunakan ekstensi zip langsung
+        File file = File('$tempPath/$doco-$dcto-$kcoo.zip');
+        await file.writeAsBytes(dlHeadAttach.bodyBytes);
+
+        // Simpan path ke shared preferences
+        await prefs.setString(SharedPref.filePath, file.path);
+        print('File path saved: ${prefs.getString(SharedPref.filePath)}');
       } else {
         print('Tidak Ada');
       }
@@ -264,9 +231,11 @@ class ApprovalListPageState extends State<ApprovalListPage> {
                               SharedPref.company, articles[item].orderCo);
                           await prefs.setString(
                               SharedPref.curCod, articles[item].curCod);
-                          getFile(articles[item].orderNumber.toString(),
-                              articles[item].orTy, articles[item].orderCo);
-                          Future.delayed(const Duration(seconds: 5), () {
+                          getFile(
+                            articles[item].orderNumber.toString(),
+                            articles[item].orTy,
+                            articles[item].orderCo,
+                          ).then((_) {
                             Get.to(() => ApprovalDetailPage());
                           });
                         },
@@ -332,12 +301,10 @@ class ApprovalListPageState extends State<ApprovalListPage> {
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            oCcy.format(
-                                                  articles[item]
-                                                      .quantityOrdered,
-                                                ) +
-                                                ' ' +
-                                                articles[item].curCod,
+                                            '${oCcy.format(
+                                              (articles[item].quantityOrdered /
+                                                  100),
+                                            )} ${articles[item].curCod}',
                                             style: GoogleFonts.dmSans(
                                               fontSize: 13,
                                             ),
