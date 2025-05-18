@@ -2,8 +2,11 @@ import 'dart:io';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:jde_mobile_approval/core/constant/color.dart';
+import 'package:jde_mobile_approval/core/helper/vpn_checker_service.dart';
 import 'package:jde_mobile_approval/feature/login/ui/page/login_page.dart';
 import 'package:get/get.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -25,13 +28,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      navigatorKey: navigatorKey,
       theme: ThemeData(
         primaryColor: ColorCustom.primaryBlue,
       ),
       builder: BotToastInit(),
       navigatorObservers: [BotToastNavigatorObserver()],
       debugShowCheckedModeBanner: false,
-      home: const LoginPage(),
+      home: Builder(
+        // Gunakan Builder agar dapat context
+        builder: (context) {
+          // Mulai pengecekan VPN setelah build pertama
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            VpnCheckerService.start(context);
+          });
+          return const LoginPage();
+        },
+      ),
     );
   }
 }

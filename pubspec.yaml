@@ -35,6 +35,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   #core
+  android_intent_plus: ^4.0.3
   archive: ^3.4.10
   # barcode_scan2: any
   bloc: ^7.0.0
@@ -42,11 +43,13 @@ dependencies:
   connectivity_plus: ^2.3.6
   dio: ^4.0.6
   equatable: ^2.0.5
+  external_app_launcher: ^4.0.3
   flutter_bloc: ^7.1.0
   get:
   http: ^0.13.5
   intl: ^0.17.0
   logger: ^1.1.0
+  network_info_plus: ^5.0.3
   open_file: ^3.3.2
   path: ^1.8.2
   path_provider: ^2.0.0

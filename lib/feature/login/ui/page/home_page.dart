@@ -15,6 +15,8 @@ import 'package:jde_mobile_approval/feature/updatesj/ui/update_sj_init.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 
+import '../../../../core/helper/vpn_helper.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -28,6 +30,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      VpnHelper.promptVpnIfNeeded();
+    });
     _loadUserData();
   }
 
